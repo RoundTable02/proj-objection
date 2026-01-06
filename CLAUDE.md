@@ -35,6 +35,8 @@ This is a Spring Boot 4.0.1 application using Java 17 with a layered architectur
 - **Entities** (`entity/`): Domain models - `User` and `BaseEntity` (provides JPA audit fields)
 - **DTOs** (`dto/`): `BaseResponse<T>` for success, `BaseErrorResponse` for errors
 - **Exception Handling** (`exception/`): `MainExceptionHandler` using `@RestControllerAdvice` catches `BaseException` subclasses
+- **Annotations** (`annotation/`): Custom annotations - `@LoginUser` for injecting authenticated user into controller methods
+- **Config** (`config/`): `LoginUserArgumentResolver` resolves `@LoginUser` parameters, `WebConfig` registers resolvers
 
 ### Authentication Flow
 
@@ -43,6 +45,19 @@ This is a Spring Boot 4.0.1 application using Java 17 with a layered architectur
 3. If user exists, validates password
 4. Creates HTTP session with userId stored in session attributes
 5. Session-based auth (not token-based), 30-minute timeout
+
+### Using @LoginUser
+
+To get the authenticated user in a controller method, use `@LoginUser User user`:
+
+```java
+@GetMapping("/me")
+public BaseResponse<String> getMyInfo(@LoginUser User user) {
+    return new BaseResponse<>(user.getNickname());
+}
+```
+
+The `LoginUserArgumentResolver` automatically extracts userId from the session and fetches the User entity. Throws `UserNotFoundException` if not logged in or user doesn't exist.
 
 ### Database
 

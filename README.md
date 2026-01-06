@@ -52,7 +52,8 @@ src/main/java/kuit/hackathon/proj_objection/
 ├── entity/         # JPA 엔티티
 ├── dto/            # 데이터 전송 객체
 ├── exception/      # 예외 클래스
-└── config/         # 설정 클래스
+├── config/         # 설정 클래스
+└── annotation/     # 커스텀 어노테이션
 ```
 
 ## 코딩 컨벤션
@@ -100,6 +101,20 @@ public class LoginService {
     private final PasswordEncoder passwordEncoder;
 }
 ```
+
+### 로그인 유저 주입 (@LoginUser)
+
+컨트롤러에서 로그인된 유저 정보가 필요할 때 `@LoginUser` 어노테이션을 사용합니다.
+
+```java
+@GetMapping("/me")
+public BaseResponse<String> getMyInfo(@LoginUser User user) {
+    return new BaseResponse<>(user.getNickname());
+}
+```
+
+`LoginUserArgumentResolver`가 세션에서 userId를 추출하고 User 엔티티를 조회합니다.
+로그인하지 않았거나 유저가 존재하지 않으면 `UserNotFoundException`이 발생합니다.
 
 ### Entity
 
