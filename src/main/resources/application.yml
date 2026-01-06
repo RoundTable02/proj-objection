@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/objection_db?serverTimezone=Asia/Seoul
+    username: objection_admin
+    password: objection1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create #주의 사용에 따라 create, update 사용 후 none으로 변경해주세요
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: true
+        same-site: strict
+      timeout: 30m
