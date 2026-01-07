@@ -19,6 +19,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # Clean build artifacts
 ./gradlew clean
+
+# Docker build (local)
+docker build -t proj-objection:test .
+
+# Docker run (local test)
+docker run -d -p 8080:8080 \
+  -e SPRING_PROFILES_ACTIVE=prod \
+  -e MYSQL_URL='jdbc:mysql://host:3306/objection_db' \
+  -e MYSQL_USERNAME='user' \
+  -e MYSQL_PASSWORD='pass' \
+  proj-objection:test
 ```
 
 ## Architecture Overview
@@ -68,3 +79,33 @@ The `LoginUserArgumentResolver` automatically extracts userId from the session a
 ## Package Structure
 
 The base package is `kuit.hackathon.proj_objection` (note: underscore, not hyphen).
+
+## Deployment
+
+### CD Pipeline
+
+GitHub Actions를 통한 자동 배포 (main 브랜치 push 시):
+
+```
+GitHub (main push) → GitHub Actions → Docker Hub → EC2 (docker pull & run) → RDS
+```
+
+### Key Files
+
+- `Dockerfile`: Multi-stage build (Gradle 8.14 → Eclipse Temurin 17 JRE)
+- `.github/workflows/deploy.yml`: CD workflow
+- `.dockerignore`: Docker build exclusions
+- `application-prod.yml`: Production config (uses env vars)
+
+### GitHub Secrets Required
+
+| Secret | Description |
+|--------|-------------|
+| `DOCKERHUB_USERNAME` | Docker Hub username |
+| `DOCKERHUB_TOKEN` | Docker Hub access token |
+| `EC2_HOST` | EC2 public IP |
+| `EC2_USERNAME` | SSH username (ubuntu/ec2-user) |
+| `EC2_SSH_KEY` | EC2 SSH private key |
+| `MYSQL_URL` | RDS connection URL |
+| `MYSQL_USERNAME` | RDS username |
+| `MYSQL_PASSWORD` | RDS password |

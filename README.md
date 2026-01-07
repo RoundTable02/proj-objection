@@ -238,3 +238,80 @@ class XxxServiceTest {
 - `create`: 개발 초기 (테이블 재생성)
 - `update`: 개발 중 (스키마 변경 반영)
 - `none`: 운영 환경
+
+## 배포
+
+### 아키텍처
+
+```
+GitHub (main push) → GitHub Actions → Docker Hub → EC2 → RDS (MySQL)
+```
+
+### CD 파이프라인
+
+`main` 브랜치에 push하면 자동으로 배포됩니다:
+
+1. GitHub Actions가 Docker 이미지 빌드
+2. Docker Hub에 이미지 push
+3. SSH로 EC2 접속하여 새 이미지 pull & run
+
+### GitHub Secrets 설정
+
+GitHub 저장소 → Settings → Secrets and variables → Actions에서 설정:
+
+| Secret | 설명 | 예시 |
+|--------|------|------|
+| `DOCKERHUB_USERNAME` | Docker Hub 사용자명 | `yourusername` |
+| `DOCKERHUB_TOKEN` | Docker Hub Access Token | Docker Hub → Account Settings → Security |
+| `EC2_HOST` | EC2 퍼블릭 IP | `13.125.xxx.xxx` |
+| `EC2_USERNAME` | SSH 사용자명 | `ubuntu` 또는 `ec2-user` |
+| `EC2_SSH_KEY` | EC2 SSH 프라이빗 키 전체 | `-----BEGIN RSA...` |
+| `MYSQL_URL` | RDS 접속 URL | `jdbc:mysql://xxx.rds.amazonaws.com:3306/objection_db?serverTimezone=Asia/Seoul` |
+| `MYSQL_USERNAME` | RDS 사용자명 | `admin` |
+| `MYSQL_PASSWORD` | RDS 비밀번호 | `your-password` |
+
+### EC2 사전 준비
+
+```bash
+# Docker 설치 (Ubuntu)
+sudo apt-get update
+sudo apt-get install -y docker.io
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker $USER
+
+# 재접속 후 확인
+docker --version
+```
+
+**보안 그룹 설정:**
+- 인바운드: 22 (SSH), 8080 (App)
+- RDS 보안 그룹: EC2에서 3306 접근 허용
+
+### 로컬 Docker 테스트
+
+```bash
+# 빌드
+docker build -t proj-objection:test .
+
+# 실행
+docker run -d -p 8080:8080 \
+  -e SPRING_PROFILES_ACTIVE=prod \
+  -e MYSQL_URL='jdbc:mysql://localhost:3306/objection_db?serverTimezone=Asia/Seoul' \
+  -e MYSQL_USERNAME='objection_admin' \
+  -e MYSQL_PASSWORD='objection1234' \
+  proj-objection:test
+
+# 로그 확인
+docker logs -f $(docker ps -q --filter name=proj-objection)
+```
+
+### 배포 파일 구조
+
+```
+├── Dockerfile                    # 멀티스테이지 빌드
+├── .dockerignore                 # Docker 빌드 제외 파일
+└── .github/
+    └── workflows/
+        └── deploy.yml            # CD 파이프라인
+```
