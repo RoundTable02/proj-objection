@@ -51,4 +51,11 @@ public class MainExceptionHandler {
         log.error("MainExceptionHandler.handle_MessageSendPermissionDeniedException <{}> {}", exception.getMessage(), exception);
         return BaseErrorResponse.of(exception);
     }
+
+    @ExceptionHandler({OpenAiApiException.class})
+    public BaseErrorResponse handle_OpenAiApiException(OpenAiApiException exception){
+        log.error("MainExceptionHandler.handle_OpenAiApiException <{}> {}", exception.getMessage(), exception);
+
+        return BaseErrorResponse.of(exception);
+    }
 }

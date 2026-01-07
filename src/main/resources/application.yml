@@ -32,3 +32,11 @@ springdoc:
     operations-sorter: alpha
   api-docs:
     path: /v3/api-docs
+
+# OpenAI 설정
+openai:
+  api:
+    key: test-openai-api-key
+    base-url: https://api.openai.com
+    timeout: 30000
+    default-model: gpt-4o

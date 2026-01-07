@@ -8,19 +8,31 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kuit.hackathon.proj_objection.annotation.LoginUser;
+import kuit.hackathon.proj_objection.client.openai.OpenAiClient;
+import kuit.hackathon.proj_objection.client.openai.dto.ChatCompletionRequest;
+import kuit.hackathon.proj_objection.client.openai.dto.Message;
 import kuit.hackathon.proj_objection.dto.BaseErrorResponse;
 import kuit.hackathon.proj_objection.dto.BaseResponse;
 import kuit.hackathon.proj_objection.entity.User;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @Tag(name = "테스트", description = "서버 상태 및 세션 확인 API")
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/test")
 @CrossOrigin(originPatterns = "*", allowCredentials = "true")       // CORS
 public class TestController {
+
+    private final OpenAiClient openAiClient;
 
     @Operation(summary = "서버 상태 확인", description = "서버가 정상 동작 중인지 확인합니다.")
     @ApiResponse(responseCode = "200", description = "서버 정상 동작")
@@ -41,4 +53,50 @@ public class TestController {
     ) {
         return new BaseResponse<>(user.getNickname());
     }
+
+    @Operation(summary = "OpenAI 단순 요청", description = "사용자 메시지만으로 OpenAI API를 호출합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "요청 성공"),
+            @ApiResponse(responseCode = "500", description = "OpenAI API 호출 실패",
+                    content = @Content(schema = @Schema(implementation = BaseErrorResponse.class)))
+    })
+    @GetMapping("/ai")
+    public BaseResponse<String> testOpenAi(
+            @Parameter(description = "질문 내용", example = "안녕하세요?")
+            @RequestParam String message
+    ) {
+        ChatCompletionRequest request = ChatCompletionRequest.of("gpt-4o", message);
+        String response = openAiClient.chatCompletion(request).getContent();
+        return new BaseResponse<>(response);
+    }
+
+    @Operation(summary = "OpenAI 시스템 프롬프트 포함 요청", description = "시스템 프롬프트와 사용자 메시지로 OpenAI API를 호출합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "요청 성공"),
+            @ApiResponse(responseCode = "500", description = "OpenAI API 호출 실패",
+                    content = @Content(schema = @Schema(implementation = BaseErrorResponse.class)))
+    })
+    @PostMapping("/ai")
+    public BaseResponse<String> testOpenAiWithSystem(
+            @RequestBody OpenAiTestRequest request
+    ) {
+        ChatCompletionRequest chatRequest = ChatCompletionRequest.builder()
+                .model("gpt-4o")
+                .messages(List.of(
+                        Message.system(request.systemPrompt()),
+                        Message.user(request.userMessage())
+                ))
+                .build();
+        String response = openAiClient.chatCompletion(chatRequest).getContent();
+        return new BaseResponse<>(response);
+    }
+
+    @Schema(description = "OpenAI 테스트 요청")
+    public record OpenAiTestRequest(
+            @Schema(description = "시스템 프롬프트", example = "당신은 친절한 AI 어시스턴트입니다.")
+            String systemPrompt,
+            @Schema(description = "사용자 메시지", example = "안녕하세요?")
+            String userMessage
+    ) {}
 }
+
