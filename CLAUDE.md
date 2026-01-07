@@ -47,7 +47,7 @@ This is a Spring Boot 4.0.1 application using Java 17 with a layered architectur
 - **DTOs** (`dto/`): `BaseResponse<T>` for success, `BaseErrorResponse` for errors
 - **Exception Handling** (`exception/`): `MainExceptionHandler` using `@RestControllerAdvice` catches `BaseException` subclasses
 - **Annotations** (`annotation/`): Custom annotations - `@LoginUser` for injecting authenticated user into controller methods
-- **Config** (`config/`): `LoginUserArgumentResolver` resolves `@LoginUser` parameters, `WebConfig` registers resolvers
+- **Config** (`config/`): `LoginUserArgumentResolver` resolves `@LoginUser` parameters, `WebConfig` registers resolvers, `SwaggerConfig` configures OpenAPI documentation
 
 ### Authentication Flow
 
@@ -75,6 +75,52 @@ The `LoginUserArgumentResolver` automatically extracts userId from the session a
 - MySQL 8.0.32 on localhost:3306
 - Database: `objection_db`
 - Hibernate DDL: `create` mode (development only - switch to `update` or `none` for production)
+
+### Swagger (API Documentation)
+
+API 명세서는 springdoc-openapi를 사용합니다.
+
+**접근 경로:**
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+
+**Controller 어노테이션 컨벤션:**
+
+```java
+@Tag(name = "도메인명", description = "API 그룹 설명")
+@RestController
+public class XxxController {
+
+    @Operation(summary = "API 요약", description = "API 상세 설명")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "성공 설명"),
+            @ApiResponse(responseCode = "400", description = "실패 설명",
+                    content = @Content(schema = @Schema(implementation = BaseErrorResponse.class)))
+    })
+    @PostMapping("/endpoint")
+    public BaseResponse<ResultDto> method(@RequestBody RequestDto request) { }
+}
+```
+
+**DTO 어노테이션 컨벤션:**
+
+```java
+@Schema(description = "DTO 설명")
+@Getter
+public class XxxDto {
+
+    @Schema(description = "필드 설명", example = "예시값")
+    private String field;
+}
+```
+
+**@LoginUser 파라미터는 Swagger에서 숨김 처리:**
+
+```java
+public BaseResponse<String> method(@Parameter(hidden = true) @LoginUser User user) { }
+```
+
+**설정 변경:** `application.yml`의 `springdoc` 섹션에서 API 제목, 설명, 버전 수정 가능
 
 ## Package Structure
 

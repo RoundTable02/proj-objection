@@ -9,6 +9,7 @@ Spring Boot 기반의 백엔드 서버 프로젝트입니다.
 - Spring Data JPA
 - MySQL 8.0.32
 - Gradle 9.2.1
+- springdoc-openapi (Swagger UI)
 
 ## 시작하기
 
@@ -87,6 +88,47 @@ public class Xxx extends BaseEntity { }
 @Getter
 @AllArgsConstructor
 public class XxxDto { }
+```
+
+### Swagger 어노테이션
+
+새로운 API를 추가할 때는 반드시 Swagger 어노테이션을 함께 작성합니다.
+
+**Controller:**
+
+```java
+@Tag(name = "도메인명", description = "API 그룹 설명")
+@RestController
+public class XxxController {
+
+    @Operation(summary = "API 요약 (한글)", description = "API 상세 설명")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "400", description = "실패 사유",
+                    content = @Content(schema = @Schema(implementation = BaseErrorResponse.class)))
+    })
+    @PostMapping("/xxx")
+    public BaseResponse<XxxResponseDto> create(@RequestBody XxxRequestDto request) { }
+}
+```
+
+**DTO:**
+
+```java
+@Schema(description = "DTO 설명")
+@Getter
+@AllArgsConstructor
+public class XxxRequestDto {
+
+    @Schema(description = "필드 설명", example = "예시값")
+    private String fieldName;
+}
+```
+
+**@LoginUser 파라미터 숨김 처리:**
+
+```java
+public BaseResponse<String> method(@Parameter(hidden = true) @LoginUser User user) { }
 ```
 
 ### 의존성 주입
@@ -219,6 +261,26 @@ class XxxServiceTest {
 | POST   | /logout    | 로그아웃             |
 | GET    | /test      | 서버 상태 확인        |
 | GET    | /test/me   | 로그인 유저 정보 확인  |
+
+## API 명세서 (Swagger)
+
+서버 실행 후 아래 URL에서 API 명세서를 확인할 수 있습니다.
+
+| 환경 | Swagger UI | OpenAPI JSON |
+|------|------------|--------------|
+| 로컬 | http://localhost:8080/swagger-ui.html | http://localhost:8080/v3/api-docs |
+
+### Swagger 설정 변경
+
+`application.yml`에서 API 정보를 수정할 수 있습니다:
+
+```yaml
+springdoc:
+  info:
+    title: 이의있오 API
+    description: 이의있오 프로젝트 API 명세서
+    version: v1.0.0
+```
 
 ## 환경 설정
 
