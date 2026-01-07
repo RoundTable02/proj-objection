@@ -39,4 +39,16 @@ public class MainExceptionHandler {
         log.error("MainExceptionHandler.handle_AlreadyJoinedChatRoomException <{}> {}", exception.getMessage(), exception);
         return BaseErrorResponse.of(exception);
     }
+
+    @ExceptionHandler({ChatRoomMemberNotFoundException.class})
+    public BaseErrorResponse handle_ChatRoomMemberNotFoundException(ChatRoomMemberNotFoundException exception) {
+        log.error("MainExceptionHandler.handle_ChatRoomMemberNotFoundException <{}> {}", exception.getMessage(), exception);
+        return BaseErrorResponse.of(exception);
+    }
+
+    @ExceptionHandler({MessageSendPermissionDeniedException.class})
+    public BaseErrorResponse handle_MessageSendPermissionDeniedException(MessageSendPermissionDeniedException exception) {
+        log.error("MainExceptionHandler.handle_MessageSendPermissionDeniedException <{}> {}", exception.getMessage(), exception);
+        return BaseErrorResponse.of(exception);
+    }
 }

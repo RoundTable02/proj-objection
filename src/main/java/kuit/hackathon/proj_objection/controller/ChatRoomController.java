@@ -10,14 +10,15 @@ import kuit.hackathon.proj_objection.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/chatrooms")
+@RequestMapping("/chat/room")
 public class ChatRoomController {
     private final ChatRoomService chatRoomService;
 
     // 채팅방 생성
-    @PostMapping
+    @PostMapping("/create")
     public BaseResponse<CreateChatRoomResponseDto> createChatRoom(@LoginUser User user) {
         CreateChatRoomResponseDto response = chatRoomService.createChatRoom(user);
         return new BaseResponse<>(response);
