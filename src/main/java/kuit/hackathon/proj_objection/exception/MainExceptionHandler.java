@@ -21,4 +21,22 @@ public class MainExceptionHandler {
 
         return BaseErrorResponse.of(exception);
     }
+
+    @ExceptionHandler({ChatRoomNotFoundException.class})
+    public BaseErrorResponse handle_ChatRoomNotFoundException(ChatRoomNotFoundException exception) {
+        log.error("MainExceptionHandler.handle_ChatRoomNotFoundException <{}> {}", exception.getMessage(), exception);
+        return BaseErrorResponse.of(exception);
+    }
+
+    @ExceptionHandler({InvalidInviteCodeException.class})
+    public BaseErrorResponse handle_InvalidInviteCodeException(InvalidInviteCodeException exception) {
+        log.error("MainExceptionHandler.handle_InvalidInviteCodeException <{}> {}", exception.getMessage(), exception);
+        return BaseErrorResponse.of(exception);
+    }
+
+    @ExceptionHandler({AlreadyJoinedChatRoomException.class})
+    public BaseErrorResponse handle_AlreadyJoinedChatRoomException(AlreadyJoinedChatRoomException exception) {
+        log.error("MainExceptionHandler.handle_AlreadyJoinedChatRoomException <{}> {}", exception.getMessage(), exception);
+        return BaseErrorResponse.of(exception);
+    }
 }
