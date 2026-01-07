@@ -6,12 +6,14 @@ import kuit.hackathon.proj_objection.dto.BaseResponse;
 import kuit.hackathon.proj_objection.dto.LoginRequestDto;
 import kuit.hackathon.proj_objection.service.LoginService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
+@CrossOrigin(originPatterns = "*", allowCredentials = "true")      // CORS
 public class LoginController {
     private final LoginService loginService;
 

@@ -20,6 +20,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
+@CrossOrigin(originPatterns = "*", allowCredentials = "true")       // CORS
 public class ChatMessageController {
     private final ChatMessageService chatMessageService;
     private final UserRepository userRepository;
@@ -54,8 +55,16 @@ public class ChatMessageController {
             @Payload SendMessageRequestDto request,
             SimpMessageHeaderAccessor headerAccessor
     ) {
+        System.out.println("=== WebSocket Message Received ===");
+        System.out.println("ChatRoom ID: " + chatRoomId);
+        System.out.println("Content: " + request.getContent());
+        System.out.println("Session Attributes: " + headerAccessor.getSessionAttributes());
+
         // WebSocket 세션에서 userId 추출
         Long userId = (Long) headerAccessor.getSessionAttributes().get("userId");
+        System.out.println("userId from WebSocket: " + userId);
+        System.out.println("==================================");
+
         if (userId == null) {
             throw new UserNotFoundException("User not logged in");
         }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/chat/room")
+@CrossOrigin(originPatterns = "*", allowCredentials = "true")       // CORS
 public class ChatRoomController {
     private final ChatRoomService chatRoomService;
 
