@@ -8,7 +8,6 @@ spring:
       ddl-auto: update #주의 사용에 따라 create, update 사용 후 none으로 변경해주세요
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
         default_batch_fetch_size: 100
 
 server:
