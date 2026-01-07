@@ -18,3 +18,16 @@ server:
         secure: true
         same-site: strict
       timeout: 30m
+
+# Swagger 설정
+springdoc:
+  info:
+    title: 이의있오 API
+    description: 이의있오 프로젝트 API 명세서
+    version: v1.0.0
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
