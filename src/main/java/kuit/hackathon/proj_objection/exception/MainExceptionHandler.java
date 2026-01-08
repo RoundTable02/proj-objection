@@ -58,4 +58,16 @@ public class MainExceptionHandler {
 
         return BaseErrorResponse.of(exception);
     }
+
+    @ExceptionHandler({InsufficientParticipantsException.class})
+    public BaseErrorResponse handle_InsufficientParticipantsException(InsufficientParticipantsException exception) {
+        log.error("MainExceptionHandler.handle_InsufficientParticipantsException <{}> {}", exception.getMessage(), exception);
+        return BaseErrorResponse.of(exception);
+    }
+
+    @ExceptionHandler({AnalysisParseException.class})
+    public BaseErrorResponse handle_AnalysisParseException(AnalysisParseException exception) {
+        log.error("MainExceptionHandler.handle_AnalysisParseException <{}> {}", exception.getMessage(), exception);
+        return BaseErrorResponse.of(exception);
+    }
 }
