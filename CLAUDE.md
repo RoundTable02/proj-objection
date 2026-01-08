@@ -47,7 +47,8 @@ This is a Spring Boot 4.0.1 application using Java 17 with a layered architectur
 - **DTOs** (`dto/`): `BaseResponse<T>` for success, `BaseErrorResponse` for errors, `ChatMessageDto`, `ChatMessageListDto`, etc.
 - **Exception Handling** (`exception/`): `MainExceptionHandler` using `@RestControllerAdvice` catches `BaseException` subclasses
 - **Annotations** (`annotation/`): Custom annotations - `@LoginUser` for injecting authenticated user into controller methods
-- **Config** (`config/`): `LoginUserArgumentResolver` resolves `@LoginUser` parameters, `WebConfig` registers resolvers, `SwaggerConfig` configures OpenAPI documentation, `WebSocketConfig` configures STOMP WebSocket
+- **Config** (`config/`): `LoginUserArgumentResolver` resolves `@LoginUser` parameters, `WebConfig` registers resolvers, `SwaggerConfig` configures OpenAPI documentation, `WebSocketConfig` configures STOMP WebSocket, `OpenAiConfig` configures RestClient for OpenAI API
+- **Client** (`client/openai/`): OpenAI API client - `OpenAiClient` interface and `OpenAiClientImpl` implementation for Chat Completion API
 
 ### Authentication Flow
 
@@ -172,6 +173,53 @@ public BaseResponse<String> method(@Parameter(hidden = true) @LoginUser User use
 
 **설정 변경:** `application.yml`의 `springdoc` 섹션에서 API 제목, 설명, 버전 수정 가능
 
+### OpenAI Client
+
+OpenAI Chat Completion API를 호출하기 위한 클라이언트입니다. 자세한 사용법은 `docs/OPENAI_CLIENT.md` 참조.
+
+**환경변수 설정:**
+```bash
+export OPENAI_API_KEY=your-api-key-here
+```
+
+**기본 사용법:**
+
+```java
+@RequiredArgsConstructor
+@Service
+public class MyService {
+    private final OpenAiClient openAiClient;
+
+    public String ask(String question) {
+        ChatCompletionRequest request = ChatCompletionRequest.of("gpt-4o", question);
+        return openAiClient.chatCompletion(request).getContent();
+    }
+}
+```
+
+**시스템 프롬프트 포함:**
+
+```java
+ChatCompletionRequest request = ChatCompletionRequest.builder()
+        .model("gpt-4o")
+        .messages(List.of(
+            Message.system("You are a helpful assistant."),
+            Message.user(userMessage)
+        ))
+        .temperature(0.7)
+        .maxTokens(1000)
+        .build();
+```
+
+**DTO 클래스:**
+- `ChatCompletionRequest`: 요청 DTO (model, messages, temperature, maxTokens)
+- `ChatCompletionResponse`: 응답 DTO (id, model, choices, usage)
+- `Message`: 메시지 DTO - `Message.system()`, `Message.user()`, `Message.assistant()`
+- `Choice`: 응답 선택지
+- `Usage`: 토큰 사용량
+
+**에러 처리:** API 호출 실패 시 `OpenAiApiException` 발생 (401: 잘못된 API 키, 429: Rate Limit, 5xx: 서버 에러)
+
 ## Package Structure
 
 The base package is `kuit.hackathon.proj_objection` (note: underscore, not hyphen).
@@ -205,3 +253,4 @@ GitHub (main push) → GitHub Actions → Docker Hub → EC2 (docker pull & run)
 | `MYSQL_URL` | RDS connection URL |
 | `MYSQL_USERNAME` | RDS username |
 | `MYSQL_PASSWORD` | RDS password |
+| `OPENAI_API_KEY` | OpenAI API key |
