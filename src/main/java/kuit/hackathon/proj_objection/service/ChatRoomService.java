@@ -21,8 +21,8 @@ public class ChatRoomService {
 
     // 채팅방 생성
     @Transactional
-    public CreateChatRoomResponseDto createChatRoom(User creator) {
-        ChatRoom chatRoom = ChatRoom.create(creator);
+    public CreateChatRoomResponseDto createChatRoom(User creator, String reward) {
+        ChatRoom chatRoom = ChatRoom.create(creator, reward);
         ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
 
         // 생성자는 자동으로 PARTICIPANT로 입장
