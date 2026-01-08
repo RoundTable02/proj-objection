@@ -6,6 +6,7 @@ import kuit.hackathon.proj_objection.entity.ChatMessage;
 import kuit.hackathon.proj_objection.entity.ChatRoom;
 import kuit.hackathon.proj_objection.entity.ChatRoomMember;
 import kuit.hackathon.proj_objection.entity.User;
+import kuit.hackathon.proj_objection.exception.ChatRoomClosedException;
 import kuit.hackathon.proj_objection.exception.ChatRoomMemberNotFoundException;
 import kuit.hackathon.proj_objection.exception.ChatRoomNotFoundException;
 import kuit.hackathon.proj_objection.exception.MessageSendPermissionDeniedException;
@@ -34,6 +35,10 @@ public class ChatMessageService {
         // 채팅방 존재 확인
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(ChatRoomNotFoundException::new);
+
+        if (chatRoom.getStatus() == ChatRoom.RoomStatus.CLOSED) {
+            throw new ChatRoomClosedException();
+        }
 
         // 메시지 전송자가 채팅방 멤버인지 확인
         ChatRoomMember senderMember = chatRoomMemberRepository.findByChatRoomAndUser(chatRoom, sender)

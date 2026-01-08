@@ -52,6 +52,31 @@ public class MainExceptionHandler {
         return BaseErrorResponse.of(exception);
     }
 
+    @ExceptionHandler({ChatRoomClosedException.class})
+    public BaseErrorResponse handle_ChatRoomClosedException(ChatRoomClosedException exception) {
+        log.error("MainExceptionHandler.handle_ChatRoomClosedException <{}> {}", exception.getMessage(), exception);
+        return BaseErrorResponse.of(exception);
+    }
+
+    @ExceptionHandler({ExitRequestPermissionDeniedException.class})
+    public BaseErrorResponse handle_ExitRequestPermissionDeniedException(ExitRequestPermissionDeniedException exception) {
+        log.error("MainExceptionHandler.handle_ExitRequestPermissionDeniedException <{}> {}", exception.getMessage(), exception);
+        return BaseErrorResponse.of(exception);
+    }
+
+    @ExceptionHandler({ExitDecisionPermissionDeniedException.class})
+    public BaseErrorResponse handle_ExitDecisionPermissionDeniedException(ExitDecisionPermissionDeniedException exception) {
+        log.error("MainExceptionHandler.handle_ExitDecisionPermissionDeniedException <{}> {}", exception.getMessage(), exception);
+        return BaseErrorResponse.of(exception);
+    }
+
+    @ExceptionHandler({NoExitRequestException.class})
+    public BaseErrorResponse handle_NoExitRequestException(NoExitRequestException exception) {
+        log.error("MainExceptionHandler.handle_NoExitRequestException <{}> {}", exception.getMessage(), exception);
+        return BaseErrorResponse.of(exception);
+    }
+
+
     @ExceptionHandler({OpenAiApiException.class})
     public BaseErrorResponse handle_OpenAiApiException(OpenAiApiException exception){
         log.error("MainExceptionHandler.handle_OpenAiApiException <{}> {}", exception.getMessage(), exception);
