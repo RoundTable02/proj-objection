@@ -54,49 +54,49 @@ public class TestController {
         return new BaseResponse<>(user.getNickname());
     }
 
-    @Operation(summary = "OpenAI 단순 요청", description = "사용자 메시지만으로 OpenAI API를 호출합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "요청 성공"),
-            @ApiResponse(responseCode = "500", description = "OpenAI API 호출 실패",
-                    content = @Content(schema = @Schema(implementation = BaseErrorResponse.class)))
-    })
-    @GetMapping("/ai")
-    public BaseResponse<String> testOpenAi(
-            @Parameter(description = "질문 내용", example = "안녕하세요?")
-            @RequestParam String message
-    ) {
-        ChatCompletionRequest request = ChatCompletionRequest.of("gpt-4o", message);
-        String response = openAiClient.chatCompletion(request).getContent();
-        return new BaseResponse<>(response);
-    }
-
-    @Operation(summary = "OpenAI 시스템 프롬프트 포함 요청", description = "시스템 프롬프트와 사용자 메시지로 OpenAI API를 호출합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "요청 성공"),
-            @ApiResponse(responseCode = "500", description = "OpenAI API 호출 실패",
-                    content = @Content(schema = @Schema(implementation = BaseErrorResponse.class)))
-    })
-    @PostMapping("/ai")
-    public BaseResponse<String> testOpenAiWithSystem(
-            @RequestBody OpenAiTestRequest request
-    ) {
-        ChatCompletionRequest chatRequest = ChatCompletionRequest.builder()
-                .model("gpt-4o")
-                .messages(List.of(
-                        Message.system(request.systemPrompt()),
-                        Message.user(request.userMessage())
-                ))
-                .build();
-        String response = openAiClient.chatCompletion(chatRequest).getContent();
-        return new BaseResponse<>(response);
-    }
-
-    @Schema(description = "OpenAI 테스트 요청")
-    public record OpenAiTestRequest(
-            @Schema(description = "시스템 프롬프트", example = "당신은 친절한 AI 어시스턴트입니다.")
-            String systemPrompt,
-            @Schema(description = "사용자 메시지", example = "안녕하세요?")
-            String userMessage
-    ) {}
+//    @Operation(summary = "OpenAI 단순 요청", description = "사용자 메시지만으로 OpenAI API를 호출합니다.")
+//    @ApiResponses({
+//            @ApiResponse(responseCode = "200", description = "요청 성공"),
+//            @ApiResponse(responseCode = "500", description = "OpenAI API 호출 실패",
+//                    content = @Content(schema = @Schema(implementation = BaseErrorResponse.class)))
+//    })
+//    @GetMapping("/ai")
+//    public BaseResponse<String> testOpenAi(
+//            @Parameter(description = "질문 내용", example = "안녕하세요?")
+//            @RequestParam String message
+//    ) {
+//        ChatCompletionRequest request = ChatCompletionRequest.of("gpt-4o", message);
+//        String response = openAiClient.chatCompletion(request).getContent();
+//        return new BaseResponse<>(response);
+//    }
+//
+//    @Operation(summary = "OpenAI 시스템 프롬프트 포함 요청", description = "시스템 프롬프트와 사용자 메시지로 OpenAI API를 호출합니다.")
+//    @ApiResponses({
+//            @ApiResponse(responseCode = "200", description = "요청 성공"),
+//            @ApiResponse(responseCode = "500", description = "OpenAI API 호출 실패",
+//                    content = @Content(schema = @Schema(implementation = BaseErrorResponse.class)))
+//    })
+//    @PostMapping("/ai")
+//    public BaseResponse<String> testOpenAiWithSystem(
+//            @RequestBody OpenAiTestRequest request
+//    ) {
+//        ChatCompletionRequest chatRequest = ChatCompletionRequest.builder()
+//                .model("gpt-4o")
+//                .messages(List.of(
+//                        Message.system(request.systemPrompt()),
+//                        Message.user(request.userMessage())
+//                ))
+//                .build();
+//        String response = openAiClient.chatCompletion(chatRequest).getContent();
+//        return new BaseResponse<>(response);
+//    }
+//
+//    @Schema(description = "OpenAI 테스트 요청")
+//    public record OpenAiTestRequest(
+//            @Schema(description = "시스템 프롬프트", example = "당신은 친절한 AI 어시스턴트입니다.")
+//            String systemPrompt,
+//            @Schema(description = "사용자 메시지", example = "안녕하세요?")
+//            String userMessage
+//    ) {}
 }
 
