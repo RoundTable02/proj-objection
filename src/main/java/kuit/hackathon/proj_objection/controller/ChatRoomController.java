@@ -91,7 +91,7 @@ public class ChatRoomController {
     @PostMapping("/{chatRoomId}/exit/request")
     public BaseResponse<ExitRequestResponseDto> requestExit(
             @PathVariable Long chatRoomId,
-            @LoginUser User user
+            @Parameter(hidden = true) @LoginUser User user
     ) {
         ExitRequestResponseDto response = chatRoomService.requestExit(chatRoomId, user);
         return new BaseResponse<>(response);
@@ -134,7 +134,7 @@ public class ChatRoomController {
     public BaseResponse<ExitDecisionResponseDto> decideExit(
             @PathVariable Long chatRoomId,
             @RequestBody ExitDecisionRequestDto request,
-            @LoginUser User user
+            @Parameter(hidden = true) @LoginUser User user
     ) {
         ExitDecisionResponseDto response = chatRoomService.decideExit(chatRoomId, user, request.getApprove());
         return new BaseResponse<>(response);
