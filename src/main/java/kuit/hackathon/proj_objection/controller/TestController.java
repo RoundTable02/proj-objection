@@ -11,6 +11,7 @@ import kuit.hackathon.proj_objection.annotation.LoginUser;
 import kuit.hackathon.proj_objection.dto.BaseErrorResponse;
 import kuit.hackathon.proj_objection.dto.BaseResponse;
 import kuit.hackathon.proj_objection.entity.User;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "테스트", description = "서버 상태 및 세션 확인 API")
 @RestController
 @RequestMapping("/test")
+@CrossOrigin(originPatterns = "*", allowCredentials = "true")       // CORS
 public class TestController {
 
     @Operation(summary = "서버 상태 확인", description = "서버가 정상 동작 중인지 확인합니다.")
