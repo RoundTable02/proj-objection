@@ -56,39 +56,39 @@ public class TestController {
         return new BaseResponse<>(user.getNickname());
     }
 
-    @Operation(summary = "퍼센트 분석 프롬프트 테스트", description = "formattedMessages를 직접 받아서 퍼센트 분석 프롬프트로 AI 응답을 테스트합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "요청 성공"),
-            @ApiResponse(responseCode = "500", description = "OpenAI API 호출 실패",
-                    content = @Content(schema = @Schema(implementation = BaseErrorResponse.class)))
-    })
-    @PostMapping("/ai/percent")
-    public BaseResponse<String> testPercentPrompt(
-            @RequestBody PromptTestRequest request
-    ) {
-        String response = openAiChatProcessor.testPercentPrompt(request.formattedMessages());
-        return new BaseResponse<>(response);
-    }
-
-    @Operation(summary = "정밀 분석 프롬프트 테스트", description = "formattedMessages를 직접 받아서 정밀 분석 프롬프트로 AI 응답을 테스트합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "요청 성공"),
-            @ApiResponse(responseCode = "500", description = "OpenAI API 호출 실패",
-                    content = @Content(schema = @Schema(implementation = BaseErrorResponse.class)))
-    })
-    @PostMapping("/ai/detailed")
-    public BaseResponse<String> testDetailedPrompt(
-            @RequestBody PromptTestRequest request
-    ) {
-        String response = openAiChatProcessor.testDetailedPrompt(request.formattedMessages());
-        return new BaseResponse<>(response);
-    }
-
-    @Schema(description = "프롬프트 테스트 요청")
-    public record PromptTestRequest(
-            @Schema(description = "원고와 피고의 대화 내용", example = "원고: 환경 보호가 중요합니다.\n피고: 경제 발전이 더 중요합니다.\n원고: 환경 없이는 지속 가능한 발전이 불가능합니다.")
-            String formattedMessages
-    ) {}
+//    @Operation(summary = "퍼센트 분석 프롬프트 테스트", description = "formattedMessages를 직접 받아서 퍼센트 분석 프롬프트로 AI 응답을 테스트합니다.")
+//    @ApiResponses({
+//            @ApiResponse(responseCode = "200", description = "요청 성공"),
+//            @ApiResponse(responseCode = "500", description = "OpenAI API 호출 실패",
+//                    content = @Content(schema = @Schema(implementation = BaseErrorResponse.class)))
+//    })
+//    @PostMapping("/ai/percent")
+//    public BaseResponse<String> testPercentPrompt(
+//            @RequestBody PromptTestRequest request
+//    ) {
+//        String response = openAiChatProcessor.testPercentPrompt(request.formattedMessages());
+//        return new BaseResponse<>(response);
+//    }
+//
+//    @Operation(summary = "정밀 분석 프롬프트 테스트", description = "formattedMessages를 직접 받아서 정밀 분석 프롬프트로 AI 응답을 테스트합니다.")
+//    @ApiResponses({
+//            @ApiResponse(responseCode = "200", description = "요청 성공"),
+//            @ApiResponse(responseCode = "500", description = "OpenAI API 호출 실패",
+//                    content = @Content(schema = @Schema(implementation = BaseErrorResponse.class)))
+//    })
+//    @PostMapping("/ai/detailed")
+//    public BaseResponse<String> testDetailedPrompt(
+//            @RequestBody PromptTestRequest request
+//    ) {
+//        String response = openAiChatProcessor.testDetailedPrompt(request.formattedMessages());
+//        return new BaseResponse<>(response);
+//    }
+//
+//    @Schema(description = "프롬프트 테스트 요청")
+//    public record PromptTestRequest(
+//            @Schema(description = "원고와 피고의 대화 내용", example = "원고: 환경 보호가 중요합니다.\n피고: 경제 발전이 더 중요합니다.\n원고: 환경 없이는 지속 가능한 발전이 불가능합니다.")
+//            String formattedMessages
+//    ) {}
 
 //    @Operation(summary = "OpenAI 단순 요청", description = "사용자 메시지만으로 OpenAI API를 호출합니다.")
 //    @ApiResponses({
