@@ -9,6 +9,7 @@ Spring Boot 기반의 백엔드 서버 프로젝트입니다.
 - Spring Data JPA
 - MySQL 8.0.32
 - Gradle 9.2.1
+- springdoc-openapi (Swagger UI)
 
 ## 시작하기
 
@@ -87,6 +88,47 @@ public class Xxx extends BaseEntity { }
 @Getter
 @AllArgsConstructor
 public class XxxDto { }
+```
+
+### Swagger 어노테이션
+
+새로운 API를 추가할 때는 반드시 Swagger 어노테이션을 함께 작성합니다.
+
+**Controller:**
+
+```java
+@Tag(name = "도메인명", description = "API 그룹 설명")
+@RestController
+public class XxxController {
+
+    @Operation(summary = "API 요약 (한글)", description = "API 상세 설명")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "400", description = "실패 사유",
+                    content = @Content(schema = @Schema(implementation = BaseErrorResponse.class)))
+    })
+    @PostMapping("/xxx")
+    public BaseResponse<XxxResponseDto> create(@RequestBody XxxRequestDto request) { }
+}
+```
+
+**DTO:**
+
+```java
+@Schema(description = "DTO 설명")
+@Getter
+@AllArgsConstructor
+public class XxxRequestDto {
+
+    @Schema(description = "필드 설명", example = "예시값")
+    private String fieldName;
+}
+```
+
+**@LoginUser 파라미터 숨김 처리:**
+
+```java
+public BaseResponse<String> method(@Parameter(hidden = true) @LoginUser User user) { }
 ```
 
 ### 의존성 주입
@@ -220,6 +262,26 @@ class XxxServiceTest {
 | GET    | /test      | 서버 상태 확인        |
 | GET    | /test/me   | 로그인 유저 정보 확인  |
 
+## API 명세서 (Swagger)
+
+서버 실행 후 아래 URL에서 API 명세서를 확인할 수 있습니다.
+
+| 환경 | Swagger UI | OpenAPI JSON |
+|------|------------|--------------|
+| 로컬 | http://localhost:8080/swagger-ui.html | http://localhost:8080/v3/api-docs |
+
+### Swagger 설정 변경
+
+`application.yml`에서 API 정보를 수정할 수 있습니다:
+
+```yaml
+springdoc:
+  info:
+    title: 이의있오 API
+    description: 이의있오 프로젝트 API 명세서
+    version: v1.0.0
+```
+
 ## 환경 설정
 
 ### 개발 환경
@@ -238,3 +300,80 @@ class XxxServiceTest {
 - `create`: 개발 초기 (테이블 재생성)
 - `update`: 개발 중 (스키마 변경 반영)
 - `none`: 운영 환경
+
+## 배포
+
+### 아키텍처
+
+```
+GitHub (main push) → GitHub Actions → Docker Hub → EC2 → RDS (MySQL)
+```
+
+### CD 파이프라인
+
+`main` 브랜치에 push하면 자동으로 배포됩니다:
+
+1. GitHub Actions가 Docker 이미지 빌드
+2. Docker Hub에 이미지 push
+3. SSH로 EC2 접속하여 새 이미지 pull & run
+
+### GitHub Secrets 설정
+
+GitHub 저장소 → Settings → Secrets and variables → Actions에서 설정:
+
+| Secret | 설명 | 예시 |
+|--------|------|------|
+| `DOCKERHUB_USERNAME` | Docker Hub 사용자명 | `yourusername` |
+| `DOCKERHUB_TOKEN` | Docker Hub Access Token | Docker Hub → Account Settings → Security |
+| `EC2_HOST` | EC2 퍼블릭 IP | `13.125.xxx.xxx` |
+| `EC2_USERNAME` | SSH 사용자명 | `ubuntu` 또는 `ec2-user` |
+| `EC2_SSH_KEY` | EC2 SSH 프라이빗 키 전체 | `-----BEGIN RSA...` |
+| `MYSQL_URL` | RDS 접속 URL | `jdbc:mysql://xxx.rds.amazonaws.com:3306/objection_db?serverTimezone=Asia/Seoul` |
+| `MYSQL_USERNAME` | RDS 사용자명 | `admin` |
+| `MYSQL_PASSWORD` | RDS 비밀번호 | `your-password` |
+
+### EC2 사전 준비
+
+```bash
+# Docker 설치 (Ubuntu)
+sudo apt-get update
+sudo apt-get install -y docker.io
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker $USER
+
+# 재접속 후 확인
+docker --version
+```
+
+**보안 그룹 설정:**
+- 인바운드: 22 (SSH), 8080 (App)
+- RDS 보안 그룹: EC2에서 3306 접근 허용
+
+### 로컬 Docker 테스트
+
+```bash
+# 빌드
+docker build -t proj-objection:test .
+
+# 실행
+docker run -d -p 8080:8080 \
+  -e SPRING_PROFILES_ACTIVE=prod \
+  -e MYSQL_URL='jdbc:mysql://localhost:3306/objection_db?serverTimezone=Asia/Seoul' \
+  -e MYSQL_USERNAME='objection_admin' \
+  -e MYSQL_PASSWORD='objection1234' \
+  proj-objection:test
+
+# 로그 확인
+docker logs -f $(docker ps -q --filter name=proj-objection)
+```
+
+### 배포 파일 구조
+
+```
+├── Dockerfile                    # 멀티스테이지 빌드
+├── .dockerignore                 # Docker 빌드 제외 파일
+└── .github/
+    └── workflows/
+        └── deploy.yml            # CD 파이프라인
+```
