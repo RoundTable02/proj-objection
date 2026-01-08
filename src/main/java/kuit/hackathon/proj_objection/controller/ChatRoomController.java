@@ -8,7 +8,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kuit.hackathon.proj_objection.annotation.LoginUser;
-import kuit.hackathon.proj_objection.dto.*;
+import kuit.hackathon.proj_objection.dto.BaseErrorResponse;
+import kuit.hackathon.proj_objection.dto.BaseResponse;
+import kuit.hackathon.proj_objection.dto.CreateChatRoomResponseDto;
+import kuit.hackathon.proj_objection.dto.JoinChatRoomRequestDto;
+import kuit.hackathon.proj_objection.dto.JoinChatRoomResponseDto;
 import kuit.hackathon.proj_objection.entity.User;
 import kuit.hackathon.proj_objection.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +34,9 @@ public class ChatRoomController {
     })
     @PostMapping("/create")
     public BaseResponse<CreateChatRoomResponseDto> createChatRoom(
-            @RequestBody CreateChatRoomRequestDto request,
             @Parameter(hidden = true) @LoginUser User user
     ) {
-        CreateChatRoomResponseDto response = chatRoomService.createChatRoom(user, request.getReward());
+        CreateChatRoomResponseDto response = chatRoomService.createChatRoom(user);
         return new BaseResponse<>(response);
     }
 

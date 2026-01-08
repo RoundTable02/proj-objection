@@ -44,15 +44,14 @@ class ChatRoomServiceTest {
     void createChatRoom_success() {
         // given
         User creator = User.create("철수", "password123");
-        String reward = "상품권 1만원";
-        ChatRoom chatRoom = ChatRoom.create(creator, reward);
+        ChatRoom chatRoom = ChatRoom.create(creator);
 
         given(chatRoomRepository.save(any(ChatRoom.class))).willReturn(chatRoom);
         given(chatRoomMemberRepository.save(any(ChatRoomMember.class)))
                 .willReturn(ChatRoomMember.create(chatRoom, creator, ChatRoomMember.MemberRole.PARTICIPANT));
 
         // when
-        CreateChatRoomResponseDto result = chatRoomService.createChatRoom(creator, reward);
+        CreateChatRoomResponseDto result = chatRoomService.createChatRoom(creator);
 
         // then
         assertThat(result.getTitle()).isNotNull();
@@ -70,8 +69,7 @@ class ChatRoomServiceTest {
         // given
         User creator = User.create("철수", "password123");
         User joiner = User.create("영희", "password456");
-        String reward = "상품권 1만원";
-        ChatRoom chatRoom = ChatRoom.create(creator, reward);
+        ChatRoom chatRoom = ChatRoom.create(creator);
         String participantCode = chatRoom.getParticipantCode();
 
         given(chatRoomRepository.findByInviteCode(participantCode)).willReturn(Optional.of(chatRoom));
@@ -96,8 +94,7 @@ class ChatRoomServiceTest {
         // given
         User creator = User.create("철수", "password123");
         User observer = User.create("민수", "password789");
-        String reward = "상품권 1만원";
-        ChatRoom chatRoom = ChatRoom.create(creator, reward);
+        ChatRoom chatRoom = ChatRoom.create(creator);
         String observerCode = chatRoom.getObserverCode();
 
         given(chatRoomRepository.findByInviteCode(observerCode)).willReturn(Optional.of(chatRoom));
@@ -137,8 +134,7 @@ class ChatRoomServiceTest {
     void joinChatRoom_alreadyJoined_throwsException() {
         // given
         User creator = User.create("철수", "password123");
-        String reward = "상품권 1만원";
-        ChatRoom chatRoom = ChatRoom.create(creator, reward);
+        ChatRoom chatRoom = ChatRoom.create(creator);
         String participantCode = chatRoom.getParticipantCode();
 
         given(chatRoomRepository.findByInviteCode(participantCode)).willReturn(Optional.of(chatRoom));

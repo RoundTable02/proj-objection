@@ -28,16 +28,12 @@ public class ChatRoom extends BaseEntity{
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator; // 방 생성자
 
-    @Column(length = 500)
-    private String reward;
-
-    public static ChatRoom create(User creator, String reward) {
+    public static ChatRoom create(User creator){
         ChatRoom chatRoom = new ChatRoom();
         chatRoom.title = generateTitle(); // 수정 필요
         chatRoom.creator = creator;
         chatRoom.participantCode = generateInviteCode();
         chatRoom.observerCode = generateInviteCode();
-        chatRoom.reward = reward;
         return chatRoom;
     }
 
