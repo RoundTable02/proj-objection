@@ -231,6 +231,68 @@ async function main() {
 
 ---
 
+## 종료(판결) 알림 수신 (Server -> Client)
+
+### Subscribe Destination
+
+```
+/topic/chatroom/{chatRoomId}/exit
+```
+
+채팅방 종료(판결) 요청/수락/거절 시 해당 채팅방을 구독 중인 모든 클라이언트에게 알림이 전송됩니다.
+
+### Response Body
+
+```json
+{
+    "type": "EXIT_REQUEST",
+    "requesterNickname": "홍길동",
+    "message": "지금까지의 대화를 바탕으로 판결을 요청하시겠습니까?"
+}
+```
+
+### 필드 설명
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `type` | String | 알림 타입 (`EXIT_REQUEST`, `EXIT_APPROVED`, `EXIT_REJECTED`) |
+| `requesterNickname` | String | 요청자/결정자 닉네임 |
+| `message` | String | 알림 메시지 |
+
+### 알림 타입
+
+| 값 | 설명 |
+|----|------|
+| `EXIT_REQUEST` | 판결 요청됨 (상대방이 판결을 요청함) |
+| `EXIT_APPROVED` | 판결 수락됨 (채팅방 종료) |
+| `EXIT_REJECTED` | 판결 거절됨 (채팅방 계속 진행) |
+
+### 예제 (JavaScript)
+
+```javascript
+// 종료 알림 구독
+stompClient.subscribe(`/topic/chatroom/${chatRoomId}/exit`, function(message) {
+    const notification = JSON.parse(message.body);
+
+    switch (notification.type) {
+        case 'EXIT_REQUEST':
+            // 판결 요청 UI 표시 (수락/거절 버튼)
+            showExitRequestDialog(notification.requesterNickname, notification.message);
+            break;
+        case 'EXIT_APPROVED':
+            // 채팅방 종료 처리
+            closeChatRoom(notification.message);
+            break;
+        case 'EXIT_REJECTED':
+            // 판결 거절 알림
+            showNotification(notification.message);
+            break;
+    }
+});
+```
+
+---
+
 ## 에러 처리
 
 ### 인증 실패
@@ -272,6 +334,8 @@ WebSocket과 함께 사용할 수 있는 REST API입니다.
 | POST | `/chat/room/join` | 채팅방 입장 (초대 코드) |
 | POST | `/chat/room/{chatRoomId}/message` | 메시지 전송 (REST) |
 | GET | `/chat/room/{chatRoomId}/messages` | 메시지 목록 조회 |
+| POST | `/chat/room/{chatRoomId}/exit/request` | 판결(종료) 요청 |
+| POST | `/chat/room/{chatRoomId}/exit/decide` | 판결 요청 수락/거절 |
 
 > REST API 상세 스펙은 Swagger UI (`/swagger-ui.html`)에서 확인하세요.
 
@@ -287,5 +351,27 @@ WebSocket과 함께 사용할 수 있는 REST API입니다.
     "A": 57.3,
     "B": 42.7
   }
+}
+```
+
+- 최종 판결문 응답
+
+```json
+{
+  "type": "FINAL_JUDGEMENT",
+  "winner": "A",
+  "plaintiff": "A",
+  "defendant": "B",
+  "winnerLogicScore": {
+    "A": 57.3,
+    "B": 42.7
+  },
+  "winnerEmpathyScore": {
+    "A": 57.3,
+    "B": 42.7
+  },
+  "judgementComment": "논리는 대등했으나, 법정 모독(비속어 사용)으로 원고 승소!",
+  "winnerReason": "원고는 구체적 사유를 들어 지각을 소명함",
+  "loserReason": "피고는 논리적 반박 대신 감정적 비난으로 일관함"
 }
 ```

@@ -78,15 +78,29 @@ The `LoginUserArgumentResolver` automatically extracts userId from the session a
 - **OBSERVER**: 관전자 - 메시지 조회만 가능 (전송 불가)
 
 **주요 엔티티:**
-- `ChatRoom`: 채팅방 정보 (title, participantCode, observerCode, creator)
+- `ChatRoom`: 채팅방 정보 (title, participantCode, observerCode, creator, status, exitRequester)
 - `ChatRoomMember`: 채팅방 멤버 정보 (chatRoom, user, role)
 - `ChatMessage`: 채팅 메시지 (chatRoom, sender, content)
+
+**채팅방 상태 (RoomStatus):**
+- `ACTIVE`: 정상 운영 중
+- `EXIT_PENDING`: 종료 요청 대기 중 (한 PARTICIPANT가 판결 요청)
+- `CLOSED`: 종료됨 (판결 완료)
 
 **API 엔드포인트:**
 - `POST /chat/room/create`: 채팅방 생성 (생성자는 자동으로 PARTICIPANT로 입장)
 - `POST /chat/room/join`: 초대 코드로 입장 (participantCode → PARTICIPANT, observerCode → OBSERVER)
 - `POST /chat/room/{chatRoomId}/message`: 메시지 전송 (REST)
 - `GET /chat/room/{chatRoomId}/messages`: 메시지 목록 조회
+- `POST /chat/room/{chatRoomId}/exit/request`: 판결(종료) 요청 (PARTICIPANT만 가능)
+- `POST /chat/room/{chatRoomId}/exit/decide`: 판결 요청 수락/거절 (요청자 외 PARTICIPANT만 가능)
+
+**판결(종료) 흐름:**
+1. PARTICIPANT A가 `/exit/request` 호출 → 상태가 `EXIT_PENDING`으로 변경
+2. WebSocket `/topic/chatroom/{chatRoomId}/exit`로 상대방에게 알림 전송
+3. PARTICIPANT B가 `/exit/decide` 호출 (approve: true/false)
+   - 수락 시: 상태가 `CLOSED`로 변경
+   - 거절 시: 상태가 `ACTIVE`로 복원
 
 **초대 코드:**
 - 채팅방 생성 시 두 개의 초대 코드 자동 생성 (형식: `0000-0000`)
@@ -113,6 +127,17 @@ stompClient.send("/app/chatroom/{chatRoomId}", {}, JSON.stringify({content: "Hel
 // 채팅방 구독
 stompClient.subscribe("/topic/chatroom/{chatRoomId}", function(message) {
     // 메시지 처리
+});
+```
+
+**종료 알림 수신:**
+```javascript
+// 종료 알림 구독
+stompClient.subscribe("/topic/chatroom/{chatRoomId}/exit", function(message) {
+    const notification = JSON.parse(message.body);
+    // notification.type: "EXIT_REQUEST" | "EXIT_APPROVED" | "EXIT_REJECTED"
+    // notification.requesterNickname: 요청자 닉네임
+    // notification.message: 알림 메시지
 });
 ```
 
