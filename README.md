@@ -129,6 +129,12 @@ erDiagram
     CHAT_ROOM ||--o| FINAL_JUDGEMENT : has
 ```
 
+## 아키텍처 다이어그램
+
+<p align="center">
+<img width="700" alt="objection" src="https://github.com/user-attachments/assets/4d11c1c8-4f46-44a3-a380-74388ab570ba" />
+</p>
+
 ## 코딩 컨벤션
 
 ### 레이어 구조
