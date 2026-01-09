@@ -55,7 +55,7 @@ public class ChatRoom extends BaseEntity{
 
     // 종료 수락
     public void approveExit() {
-        this.status = RoomStatus.DONE;
+        this.status = RoomStatus.REQUEST_ACCEPT;
     }
 
     // 종료 거절
@@ -64,6 +64,9 @@ public class ChatRoom extends BaseEntity{
         this.status = RoomStatus.ALIVE;
     }
 
+    public void completeReport() {
+        this.status = RoomStatus.DONE;
+    }
 
     private static String generateTitle(){
         LocalDateTime now = LocalDateTime.now();

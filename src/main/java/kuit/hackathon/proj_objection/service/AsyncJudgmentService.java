@@ -1,5 +1,6 @@
 package kuit.hackathon.proj_objection.service;
 
+import jakarta.transaction.Transactional;
 import kuit.hackathon.proj_objection.dto.AnalysisResult;
 import kuit.hackathon.proj_objection.entity.ChatRoom;
 import kuit.hackathon.proj_objection.entity.ChatRoomMember;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Transactional
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -66,6 +68,8 @@ public class AsyncJudgmentService {
                     result.getLoserReason()
             );
 
+            chatRoom.completeReport();
+            chatRoomRepository.save(chatRoom);
             finalJudgementRepository.save(finalJudgement);
 
             log.info("Judgment analysis completed and saved for chatRoomId: {}", chatRoomId);
