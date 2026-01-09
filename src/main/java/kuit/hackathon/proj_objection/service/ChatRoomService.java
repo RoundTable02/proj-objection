@@ -105,7 +105,7 @@ public class ChatRoomService {
                 .orElseThrow(ChatRoomNotFoundException::new);
 
         // 종료된 채팅방 확인 -> 이미 종료된 채팅방을 또 종료하려고 하는가
-        if (chatRoom.getStatus() == ChatRoom.RoomStatus.CLOSED) {
+        if (chatRoom.getStatus() == ChatRoom.RoomStatus.DONE) {
             throw new ChatRoomClosedException();
         }
 
@@ -144,7 +144,7 @@ public class ChatRoomService {
                 .orElseThrow(ChatRoomNotFoundException::new);
 
         // 종료 요청 확인
-        if (chatRoom.getStatus() != ChatRoom.RoomStatus.EXIT_PENDING) {
+        if (chatRoom.getStatus() != ChatRoom.RoomStatus.REQUEST_FINISH) {
             throw new NoExitRequestException();
         }
 

@@ -30,7 +30,7 @@ public class ChatRoom extends BaseEntity{
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private RoomStatus status = RoomStatus.ACTIVE;
+    private RoomStatus status = RoomStatus.ALIVE;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "exit_requester_id")
@@ -43,25 +43,25 @@ public class ChatRoom extends BaseEntity{
         chatRoom.creator = creator;
         chatRoom.participantCode = generateInviteCode();
         chatRoom.observerCode = generateInviteCode();
-        chatRoom.status = RoomStatus.ACTIVE;
+        chatRoom.status = RoomStatus.ALIVE;
         return chatRoom;
     }
 
     // 종료 요청
     public void requestExit(User requester) {
         this.exitRequester = requester;
-        this.status = RoomStatus.EXIT_PENDING;
+        this.status = RoomStatus.REQUEST_FINISH;
     }
 
     // 종료 수락
     public void approveExit() {
-        this.status = RoomStatus.CLOSED;
+        this.status = RoomStatus.DONE;
     }
 
     // 종료 거절
     public void rejectExit() {
         this.exitRequester = null;
-        this.status = RoomStatus.ACTIVE;
+        this.status = RoomStatus.ALIVE;
     }
 
 
@@ -84,9 +84,10 @@ public class ChatRoom extends BaseEntity{
     }
 
     public enum RoomStatus {
-        ACTIVE,        // 정상 운영 중
-        EXIT_PENDING,  // 종료 요청 대기 중
-        CLOSED         // 종료됨
+        ALIVE,        // 정상 운영 중
+        REQUEST_FINISH,  // 종료 요청 대기 중
+        REQUEST_ACCEPT,
+        DONE         // 종료됨
     }
 
 }

@@ -22,11 +22,15 @@ public class ChatRoomMember extends BaseEntity{
     @Column(nullable = false)
     private MemberRole role;
 
+    @Column(nullable = false)
+    private int percent;
+
     public static ChatRoomMember create(ChatRoom chatRoom, User user, MemberRole role) {
         ChatRoomMember chatRoomMember = new ChatRoomMember();
         chatRoomMember.chatRoom = chatRoom;
         chatRoomMember.user = user;
         chatRoomMember.role = role;
+        chatRoomMember.percent = 50;
         return chatRoomMember;
     }
 

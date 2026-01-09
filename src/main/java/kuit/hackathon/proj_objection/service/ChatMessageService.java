@@ -36,7 +36,7 @@ public class ChatMessageService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(ChatRoomNotFoundException::new);
 
-        if (chatRoom.getStatus() == ChatRoom.RoomStatus.CLOSED) {
+        if (chatRoom.getStatus() == ChatRoom.RoomStatus.DONE) {
             throw new ChatRoomClosedException();
         }
 
