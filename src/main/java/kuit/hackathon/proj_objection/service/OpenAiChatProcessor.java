@@ -130,8 +130,12 @@ public class OpenAiChatProcessor {
         List<ChatMessage> messages = getMessagesChronological(chatRoom);
         String formattedMessages = formatMessagesForAi(messages, participants);
 
-       String response = callOpenAi(DETAILED_SYSTEM_PROMPT, formattedMessages);
-        // String response = mockResponse();
+        // 이전 percent 분석 결과를 참고 문장으로 추가
+        String percentReferenceLine = buildPercentReferenceLine(chatRoom, participants);
+        String enrichedMessages = percentReferenceLine + "\n\n" + formattedMessages;
+
+        String response = callOpenAi(DETAILED_SYSTEM_PROMPT, enrichedMessages);
+//        String response = mockResponse();
         return parseDetailedResponse(response, participants);
     }
 
@@ -232,6 +236,69 @@ public class OpenAiChatProcessor {
         log.info(sb.toString());
 
         return sb.toString().trim();
+    }
+
+    /**
+     * 이전 percent 분석 결과를 기반으로 참고 문장 생성
+     * DB에 저장된 ChatRoomMember.percent를 사용하며, 값이 없거나 비정상인 경우 50/50으로 폴백
+     *
+     * @param chatRoom     채팅방
+     * @param participants 참여자 쌍 (원고/피고)
+     * @return 참고 문장 (예: "다른 재판관은 원고의 승리 확률을 70%로, 피고의 승리 확률을 30%로 판단하였습니다.")
+     */
+    private String buildPercentReferenceLine(ChatRoom chatRoom, ParticipantPair participants) {
+        List<ChatRoomMember> members = chatRoomMemberRepository.findByChatRoom(chatRoom);
+
+        // PARTICIPANT 역할만 필터링하여 userId -> percent 맵 생성
+        Map<Long, Integer> userIdToPercent = members.stream()
+                .filter(m -> m.getRole() == ChatRoomMember.MemberRole.PARTICIPANT)
+                .collect(java.util.stream.Collectors.toMap(
+                        m -> m.getUser().getId(),
+                        ChatRoomMember::getPercent,
+                        (existing, replacement) -> existing // 중복 시 기존 값 유지
+                ));
+
+        // 원고(userA)와 피고(userB)의 percent 조회 (폴백: 50)
+        Integer plaintiffPercent = userIdToPercent.get(participants.userA().getId());
+        Integer defendantPercent = userIdToPercent.get(participants.userB().getId());
+
+        // 폴백 및 보정 로직
+        int finalPlaintiffPercent;
+        int finalDefendantPercent;
+
+        if (plaintiffPercent == null && defendantPercent == null) {
+            // 둘 다 없으면 50/50
+            finalPlaintiffPercent = 50;
+            finalDefendantPercent = 50;
+        } else if (plaintiffPercent == null) {
+            // 피고만 있으면 원고 = 100 - 피고
+            finalDefendantPercent = clampPercent(defendantPercent);
+            finalPlaintiffPercent = 100 - finalDefendantPercent;
+        } else if (defendantPercent == null) {
+            // 원고만 있으면 피고 = 100 - 원고
+            finalPlaintiffPercent = clampPercent(plaintiffPercent);
+            finalDefendantPercent = 100 - finalPlaintiffPercent;
+        } else {
+            // 둘 다 있으면 각각 clamp
+            finalPlaintiffPercent = clampPercent(plaintiffPercent);
+            finalDefendantPercent = clampPercent(defendantPercent);
+        }
+
+        String referenceLine = String.format(
+                "다른 재판관은 원고의 승리 확률을 %d%%로, 피고의 승리 확률을 %d%%로 판단하였습니다.",
+                finalPlaintiffPercent,
+                finalDefendantPercent
+        );
+
+        log.debug("Percent reference line: {}", referenceLine);
+        return referenceLine;
+    }
+
+    /**
+     * percent 값을 0-100 범위로 clamp
+     */
+    private int clampPercent(int percent) {
+        return Math.max(0, Math.min(100, percent));
     }
 
     private String callOpenAi(String systemPrompt, String userMessage) {
