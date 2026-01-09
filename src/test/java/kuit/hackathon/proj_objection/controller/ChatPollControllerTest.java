@@ -1,8 +1,8 @@
 package kuit.hackathon.proj_objection.controller;
 
-import kuit.hackathon.proj_objection.dto.BaseResponse;
-import kuit.hackathon.proj_objection.dto.ChatPollMessageDto;
-import kuit.hackathon.proj_objection.dto.ChatPollResponseDto;
+import kuit.hackathon.proj_objection.dto.response.BaseResponse;
+import kuit.hackathon.proj_objection.dto.common.ChatPollMessageDto;
+import kuit.hackathon.proj_objection.dto.response.ChatPollResponseDto;
 import kuit.hackathon.proj_objection.entity.ChatRoom;
 import kuit.hackathon.proj_objection.entity.User;
 import kuit.hackathon.proj_objection.service.ChatPollService;

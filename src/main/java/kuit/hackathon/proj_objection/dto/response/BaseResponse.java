@@ -1,4 +1,4 @@
-package kuit.hackathon.proj_objection.dto;
+package kuit.hackathon.proj_objection.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;

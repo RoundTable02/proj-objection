@@ -1,12 +1,12 @@
-package kuit.hackathon.proj_objection.dto;
+package kuit.hackathon.proj_objection.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ExitNotificationDto {
-    private String type; // EXIT_REQUEST, EXIT_APPROVED, EXIT_REJECTED
+public class ExitRequestResponseDto {
+    private Long chatRoomId;
     private String requesterNickname;
     private String message;
 }

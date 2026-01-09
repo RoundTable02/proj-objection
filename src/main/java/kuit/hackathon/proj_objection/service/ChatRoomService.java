@@ -1,6 +1,9 @@
 package kuit.hackathon.proj_objection.service;
 
-import kuit.hackathon.proj_objection.dto.*;
+import kuit.hackathon.proj_objection.dto.response.CreateChatRoomResponseDto;
+import kuit.hackathon.proj_objection.dto.response.ExitDecisionResponseDto;
+import kuit.hackathon.proj_objection.dto.response.ExitRequestResponseDto;
+import kuit.hackathon.proj_objection.dto.response.JoinChatRoomResponseDto;
 import kuit.hackathon.proj_objection.entity.ChatRoom;
 import kuit.hackathon.proj_objection.entity.ChatRoomMember;
 import kuit.hackathon.proj_objection.entity.User;
@@ -8,7 +11,6 @@ import kuit.hackathon.proj_objection.exception.*;
 import kuit.hackathon.proj_objection.repository.ChatRoomMemberRepository;
 import kuit.hackathon.proj_objection.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,33 +72,6 @@ public class ChatRoomService {
         );
     }
 
-    // 내가 속한 채팅방 정보 조회
-//    @Transactional(readOnly = true)
-//    public ChatRoomInfoDto getChatRoomInfo(Long chatRoomId, User user) {
-//        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-//                .orElseThrow(ChatRoomNotFoundException::new);
-//
-//        ChatRoomMember myMember = chatRoomMemberRepository.findByChatRoomAndUser(chatRoom, user)
-//                .orElseThrow(ChatRoomMemberNotFoundException::new);
-//
-//        List<ChatRoomMember> members = chatRoomMemberRepository.findByChatRoom(chatRoom);
-//
-//        long participantCount = members.stream()
-//                .filter(m -> m.getRole() == ChatRoomMember.MemberRole.PARTICIPANT)
-//                .count();
-//
-//        long observerCount = members.stream()
-//                .filter(m -> m.getRole() == ChatRoomMember.MemberRole.OBSERVER)
-//                .count();
-//
-//        return new ChatRoomInfoDto(
-//                chatRoom.getId(),
-//                chatRoom.getTitle(),
-//                myMember.getRole().name(),
-//                (int) participantCount,
-//                (int) observerCount
-//        );
-//    }
 
     // 종료 요청
     @Transactional
@@ -105,7 +80,10 @@ public class ChatRoomService {
                 .orElseThrow(ChatRoomNotFoundException::new);
 
         // 종료된 채팅방 확인 -> 이미 종료된 채팅방을 또 종료하려고 하는가
-        if (chatRoom.getStatus() == ChatRoom.RoomStatus.DONE) {
+//        if (chatRoom.getStatus() == ChatRoom.RoomStatus.DONE) {
+//            throw new ChatRoomClosedException();
+//        }
+        if (chatRoom.isDone()){
             throw new ChatRoomClosedException();
         }
 
@@ -136,7 +114,10 @@ public class ChatRoomService {
                 .orElseThrow(ChatRoomNotFoundException::new);
 
         // 종료 요청 확인
-        if (chatRoom.getStatus() != ChatRoom.RoomStatus.REQUEST_FINISH) {
+//        if (chatRoom.getStatus() != ChatRoom.RoomStatus.REQUEST_FINISH) {
+//            throw new NoExitRequestException();
+//        }
+        if (!chatRoom.isRequestFinish()){
             throw new NoExitRequestException();
         }
 

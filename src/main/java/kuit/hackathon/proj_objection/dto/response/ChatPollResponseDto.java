@@ -1,6 +1,7 @@
-package kuit.hackathon.proj_objection.dto;
+package kuit.hackathon.proj_objection.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import kuit.hackathon.proj_objection.dto.common.ChatPollMessageDto;
 import kuit.hackathon.proj_objection.entity.ChatRoom;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

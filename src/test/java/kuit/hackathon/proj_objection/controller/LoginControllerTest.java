@@ -2,8 +2,8 @@ package kuit.hackathon.proj_objection.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import kuit.hackathon.proj_objection.dto.BaseResponse;
-import kuit.hackathon.proj_objection.dto.LoginRequestDto;
+import kuit.hackathon.proj_objection.dto.response.BaseResponse;
+import kuit.hackathon.proj_objection.dto.request.LoginRequestDto;
 import kuit.hackathon.proj_objection.service.LoginService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

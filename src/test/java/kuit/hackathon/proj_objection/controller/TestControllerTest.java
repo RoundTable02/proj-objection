@@ -1,11 +1,10 @@
 package kuit.hackathon.proj_objection.controller;
 
 import kuit.hackathon.proj_objection.client.openai.OpenAiClient;
-import kuit.hackathon.proj_objection.client.openai.dto.ChatCompletionRequest;
 import kuit.hackathon.proj_objection.client.openai.dto.ChatCompletionResponse;
 import kuit.hackathon.proj_objection.client.openai.dto.Choice;
 import kuit.hackathon.proj_objection.client.openai.dto.Message;
-import kuit.hackathon.proj_objection.dto.BaseResponse;
+import kuit.hackathon.proj_objection.dto.response.BaseResponse;
 import kuit.hackathon.proj_objection.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
 class TestControllerTest {

@@ -68,6 +68,22 @@ public class ChatRoom extends BaseEntity{
         this.status = RoomStatus.DONE;
     }
 
+    public boolean isAlive() {
+        return this.status == RoomStatus.ALIVE;
+    }
+
+    public boolean isRequestFinish() {
+        return this.status == RoomStatus.REQUEST_FINISH;
+    }
+
+    public boolean isRequestAccept() {
+        return this.status == RoomStatus.REQUEST_ACCEPT;
+    }
+
+    public boolean isDone() {
+        return this.status == RoomStatus.DONE;
+    }
+
     private static String generateTitle(){
         LocalDateTime now = LocalDateTime.now();
 
@@ -89,8 +105,7 @@ public class ChatRoom extends BaseEntity{
     public enum RoomStatus {
         ALIVE,        // 정상 운영 중
         REQUEST_FINISH,  // 종료 요청 대기 중
-        REQUEST_ACCEPT,
+        REQUEST_ACCEPT, // 종료 요청 수락, 판결문 대기
         DONE         // 종료됨
     }
-
 }

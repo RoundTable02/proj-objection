@@ -1,12 +1,11 @@
 package kuit.hackathon.proj_objection.service;
 
-import kuit.hackathon.proj_objection.dto.CreateChatRoomResponseDto;
-import kuit.hackathon.proj_objection.dto.JoinChatRoomResponseDto;
+import kuit.hackathon.proj_objection.dto.response.CreateChatRoomResponseDto;
+import kuit.hackathon.proj_objection.dto.response.JoinChatRoomResponseDto;
 import kuit.hackathon.proj_objection.entity.ChatRoom;
 import kuit.hackathon.proj_objection.entity.ChatRoomMember;
 import kuit.hackathon.proj_objection.entity.User;
 import kuit.hackathon.proj_objection.exception.AlreadyJoinedChatRoomException;
-import kuit.hackathon.proj_objection.exception.ChatRoomNotFoundException;
 import kuit.hackathon.proj_objection.exception.InvalidInviteCodeException;
 import kuit.hackathon.proj_objection.repository.ChatRoomMemberRepository;
 import kuit.hackathon.proj_objection.repository.ChatRoomRepository;
@@ -17,7 +16,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;

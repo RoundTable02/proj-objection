@@ -6,7 +6,7 @@ import kuit.hackathon.proj_objection.client.openai.OpenAiClient;
 import kuit.hackathon.proj_objection.client.openai.dto.ChatCompletionRequest;
 import kuit.hackathon.proj_objection.client.openai.dto.ChatCompletionResponse;
 import kuit.hackathon.proj_objection.client.openai.dto.Message;
-import kuit.hackathon.proj_objection.dto.AnalysisResult;
+import kuit.hackathon.proj_objection.dto.common.AnalysisResult;
 import kuit.hackathon.proj_objection.entity.ChatMessage;
 import kuit.hackathon.proj_objection.entity.ChatRoom;
 import kuit.hackathon.proj_objection.entity.ChatRoomMember;

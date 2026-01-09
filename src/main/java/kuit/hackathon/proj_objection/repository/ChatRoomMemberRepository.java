@@ -16,9 +16,6 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
     // 특정 채팅방의 모든 멤버 조회
     List<ChatRoomMember> findByChatRoom(ChatRoom chatRoom);
 
-    // 특정 사용자가 참여한 모든 채팅방 멤버 정보 조회
-    List<ChatRoomMember> findByUser(User user);
-
     // 특정 채팅방에 특정 사용자가 이미 참여했는지 확인
     boolean existsByChatRoomAndUser(ChatRoom chatRoom, User user);
 }

@@ -1,18 +1,22 @@
-package kuit.hackathon.proj_objection.dto;
+package kuit.hackathon.proj_objection.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import kuit.hackathon.proj_objection.entity.FinalJudgement;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-@Schema(description = "AI 판결 분석 결과 알림")
+@Schema(description = "최종 판결문 조회 응답")
 @Getter
 @Builder
 @AllArgsConstructor
-public class JudgmentNotificationDto {
+public class FinalJudgementResponseDto {
 
-    @Schema(description = "알림 타입 (FINAL_JUDGMENT: 판결 완료, JUDGMENT_ERROR: 분석 실패)", example = "FINAL_JUDGMENT")
-    private String type;
+    @Schema(description = "판결문 ID", example = "1")
+    private Long id;
+
+    @Schema(description = "채팅방 ID", example = "1")
+    private Long chatRoomId;
 
     @Schema(description = "승자 닉네임", example = "홍길동")
     private String winner;
@@ -38,6 +42,18 @@ public class JudgmentNotificationDto {
     @Schema(description = "패자가 감점된 이유", example = "감정적 대응으로 일관")
     private String loserReason;
 
-    @Schema(description = "에러 메시지 (JUDGMENT_ERROR 타입일 때만 사용)", example = "AI 분석 중 오류가 발생했습니다.")
-    private String errorMessage;
+    public static FinalJudgementResponseDto from(FinalJudgement judgement) {
+        return FinalJudgementResponseDto.builder()
+                .id(judgement.getId())
+                .chatRoomId(judgement.getChatRoom().getId())
+                .winner(judgement.getWinner())
+                .plaintiff(judgement.getPlaintiff())
+                .defendant(judgement.getDefendant())
+                .winnerLogicScore(judgement.getWinnerLogicScore())
+                .winnerEmpathyScore(judgement.getWinnerEmpathyScore())
+                .judgmentComment(judgement.getJudgmentComment())
+                .winnerReason(judgement.getWinnerReason())
+                .loserReason(judgement.getLoserReason())
+                .build();
+    }
 }

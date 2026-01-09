@@ -1,7 +1,7 @@
 package kuit.hackathon.proj_objection.service;
 
 import jakarta.transaction.Transactional;
-import kuit.hackathon.proj_objection.dto.AnalysisResult;
+import kuit.hackathon.proj_objection.dto.common.AnalysisResult;
 import kuit.hackathon.proj_objection.entity.ChatRoom;
 import kuit.hackathon.proj_objection.entity.ChatRoomMember;
 import kuit.hackathon.proj_objection.entity.FinalJudgement;

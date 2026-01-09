@@ -1,6 +1,6 @@
 package kuit.hackathon.proj_objection.service;
 
-import kuit.hackathon.proj_objection.dto.FinalJudgementResponseDto;
+import kuit.hackathon.proj_objection.dto.response.FinalJudgementResponseDto;
 import kuit.hackathon.proj_objection.entity.ChatRoom;
 import kuit.hackathon.proj_objection.entity.FinalJudgement;
 import kuit.hackathon.proj_objection.entity.User;

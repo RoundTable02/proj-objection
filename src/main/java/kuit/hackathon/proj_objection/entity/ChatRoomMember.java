@@ -38,6 +38,14 @@ public class ChatRoomMember extends BaseEntity{
         this.percent = percent;
     }
 
+    public boolean isParticipant(){
+        return this.role == MemberRole.PARTICIPANT;
+    }
+
+    public boolean isObserver(){
+        return this.role == MemberRole.OBSERVER;
+    }
+
     public enum MemberRole {
         PARTICIPANT,
         OBSERVER

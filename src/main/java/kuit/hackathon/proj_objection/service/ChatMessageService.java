@@ -1,7 +1,7 @@
 package kuit.hackathon.proj_objection.service;
 
-import kuit.hackathon.proj_objection.dto.ChatMessageDto;
-import kuit.hackathon.proj_objection.dto.ChatMessageListDto;
+import kuit.hackathon.proj_objection.dto.common.ChatMessageDto;
+import kuit.hackathon.proj_objection.dto.common.ChatMessageListDto;
 import kuit.hackathon.proj_objection.entity.ChatMessage;
 import kuit.hackathon.proj_objection.entity.ChatRoom;
 import kuit.hackathon.proj_objection.entity.ChatRoomMember;
@@ -37,7 +37,10 @@ public class ChatMessageService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(ChatRoomNotFoundException::new);
 
-        if (chatRoom.getStatus() == ChatRoom.RoomStatus.DONE) {
+//        if (chatRoom.getStatus() == ChatRoom.RoomStatus.DONE) {
+//            throw new ChatRoomClosedException();
+//        }
+        if(chatRoom.isDone()){
             throw new ChatRoomClosedException();
         }
 
@@ -46,7 +49,10 @@ public class ChatMessageService {
                 .orElseThrow(ChatRoomMemberNotFoundException::new);
 
         // OBSERVER는 메시지 전송 불가
-        if (senderMember.getRole() == ChatRoomMember.MemberRole.OBSERVER) {
+//        if (senderMember.getRole() == ChatRoomMember.MemberRole.OBSERVER) {
+//            throw new MessageSendPermissionDeniedException();
+//        }
+        if(senderMember.isObserver()){
             throw new MessageSendPermissionDeniedException();
         }
 

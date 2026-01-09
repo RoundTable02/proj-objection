@@ -1,4 +1,4 @@
-package kuit.hackathon.proj_objection.dto;
+package kuit.hackathon.proj_objection.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
