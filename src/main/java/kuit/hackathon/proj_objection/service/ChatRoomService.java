@@ -166,9 +166,9 @@ public class ChatRoomService {
         chatRoomRepository.save(chatRoom);
 
 
-        // 판결 수락 시 비동기 AI 분석 트리거
+        // 판결 수락 시 비동기 AI 분석 및 DB 저장 트리거
         if (approve) {
-            asyncJudgmentService.analyzeAndBroadcast(chatRoomId);
+            asyncJudgmentService.analyzeAndSave(chatRoomId);
         }
 
         return new ExitDecisionResponseDto(

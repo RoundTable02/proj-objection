@@ -1,17 +1,17 @@
 package kuit.hackathon.proj_objection.service;
 
 import kuit.hackathon.proj_objection.dto.AnalysisResult;
-import kuit.hackathon.proj_objection.dto.JudgmentNotificationDto;
 import kuit.hackathon.proj_objection.entity.ChatRoom;
 import kuit.hackathon.proj_objection.entity.ChatRoomMember;
+import kuit.hackathon.proj_objection.entity.FinalJudgement;
 import kuit.hackathon.proj_objection.entity.User;
 import kuit.hackathon.proj_objection.exception.ChatRoomNotFoundException;
 import kuit.hackathon.proj_objection.exception.InsufficientParticipantsException;
 import kuit.hackathon.proj_objection.repository.ChatRoomMemberRepository;
 import kuit.hackathon.proj_objection.repository.ChatRoomRepository;
+import kuit.hackathon.proj_objection.repository.FinalJudgementRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -25,21 +25,24 @@ public class AsyncJudgmentService {
     private final OpenAiChatProcessor openAiChatProcessor;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final FinalJudgementRepository finalJudgementRepository;
 
     /**
-     * 비동기로 AI 판결 분석 후 결과를 브로드캐스트
+     * 비동기로 AI 판결 분석 후 결과를 DB에 저장
      * 별도 스레드 풀에서 실행되어 메인 흐름을 블로킹하지 않음
      *
      * @param chatRoomId 분석할 채팅방 ID
      */
     @Async("aiAnalysisExecutor")
-    public void analyzeAndBroadcast(Long chatRoomId) {
+    public void analyzeAndSave(Long chatRoomId) {
         try {
             log.debug("Starting judgment analysis for chatRoomId: {}", chatRoomId);
 
-            // AI 정밀 분석 호출
-            AnalysisResult result = openAiChatProcessor.analyzeDetailed(chatRoomId);
+            // 이미 판결문이 존재하면 처리하지 않음
+            if (finalJudgementRepository.existsByChatRoom_Id(chatRoomId)) {
+                log.info("FinalJudgement already exists for chatRoomId: {}, skipping analysis", chatRoomId);
+                return;
+            }
 
             // 참여자 정보 추출 (원고/피고)
             ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
@@ -47,29 +50,29 @@ public class AsyncJudgmentService {
 
             ParticipantInfo participantInfo = extractParticipants(chatRoom);
 
-            // 성공 알림 생성
-            JudgmentNotificationDto notification = buildSuccessNotification(
-                    result,
-                    participantInfo.plaintiff,
-                    participantInfo.defendant
+            // AI 정밀 분석 호출
+            AnalysisResult result = openAiChatProcessor.analyzeDetailed(chatRoomId);
+
+            // FinalJudgement 엔티티 생성 및 저장
+            FinalJudgement finalJudgement = FinalJudgement.create(
+                    chatRoom,
+                    result.getWinner(),
+                    participantInfo.plaintiff(),
+                    participantInfo.defendant(),
+                    result.getWinnerLogicScore(),
+                    result.getWinnerEmpathyScore(),
+                    result.getJudgmentComment(),
+                    result.getWinnerReason(),
+                    result.getLoserReason()
             );
 
-            // WebSocket 브로드캐스트
-            messagingTemplate.convertAndSend("/topic/chatroom/" + chatRoomId + "/exit", notification);
+            finalJudgementRepository.save(finalJudgement);
 
-            log.info("Judgment analysis completed and broadcast for chatRoomId: {}", chatRoomId);
+            log.info("Judgment analysis completed and saved for chatRoomId: {}", chatRoomId);
 
         } catch (Exception e) {
-            // 비동기 에러는 로그만 남기고 에러 알림 브로드캐스트
+            // 비동기 에러는 로그만 남김
             log.error("Failed to analyze judgment for chatRoomId {}: {}", chatRoomId, e.getMessage(), e);
-
-            // 에러 알림 생성 및 브로드캐스트
-            JudgmentNotificationDto errorNotification = JudgmentNotificationDto.builder()
-                    .type("JUDGMENT_ERROR")
-                    .errorMessage("AI 분석 중 오류가 발생했습니다.")
-                    .build();
-
-            messagingTemplate.convertAndSend("/topic/chatroom/" + chatRoomId + "/exit", errorNotification);
         }
     }
 
@@ -106,27 +109,6 @@ public class AsyncJudgmentService {
         }
 
         return new ParticipantInfo(plaintiff, defendant);
-    }
-
-    /**
-     * 성공 알림 DTO 생성
-     */
-    private JudgmentNotificationDto buildSuccessNotification(
-            AnalysisResult result,
-            String plaintiff,
-            String defendant) {
-
-        return JudgmentNotificationDto.builder()
-                .type("FINAL_JUDGMENT")
-                .winner(result.getWinner())
-                .plaintiff(plaintiff)
-                .defendant(defendant)
-                .winnerLogicScore(result.getWinnerLogicScore())
-                .winnerEmpathyScore(result.getWinnerEmpathyScore())
-                .judgmentComment(result.getJudgmentComment())
-                .winnerReason(result.getWinnerReason())
-                .loserReason(result.getLoserReason())
-                .build();
     }
 
     /**

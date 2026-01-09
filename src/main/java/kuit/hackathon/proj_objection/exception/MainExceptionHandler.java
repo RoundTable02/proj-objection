@@ -95,4 +95,10 @@ public class MainExceptionHandler {
         log.error("MainExceptionHandler.handle_AnalysisParseException <{}> {}", exception.getMessage(), exception);
         return BaseErrorResponse.of(exception);
     }
+
+    @ExceptionHandler({FinalJudgementNotFoundException.class})
+    public BaseErrorResponse handle_FinalJudgementNotFoundException(FinalJudgementNotFoundException exception) {
+        log.error("MainExceptionHandler.handle_FinalJudgementNotFoundException <{}> {}", exception.getMessage(), exception);
+        return BaseErrorResponse.of(exception);
+    }
 }
