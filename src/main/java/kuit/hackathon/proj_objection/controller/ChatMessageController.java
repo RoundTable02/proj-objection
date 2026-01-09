@@ -24,7 +24,6 @@ import java.util.List;
 @Tag(name = "채팅 메시지", description = "채팅 메시지 전송/조회 API")
 @RequiredArgsConstructor
 @RestController
-@CrossOrigin(originPatterns = "*", allowCredentials = "true")       // CORS
 public class ChatMessageController {
     private final ChatMessageService chatMessageService;
     private final UserRepository userRepository;

@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/test")
-@CrossOrigin(originPatterns = "*", allowCredentials = "true")       // CORS
 public class TestController {
 
     private final OpenAiClient openAiClient;

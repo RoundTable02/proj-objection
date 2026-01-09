@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "인증", description = "로그인/로그아웃 API")
 @RequiredArgsConstructor
 @RestController
-@CrossOrigin(originPatterns = "*", allowCredentials = "true")      // CORS
 public class LoginController {
     private final LoginService loginService;
 

@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/chat/room")
-@CrossOrigin(originPatterns = "*", allowCredentials = "true")
 public class FinalJudgementController {
 
     private final FinalJudgementService finalJudgementService;
