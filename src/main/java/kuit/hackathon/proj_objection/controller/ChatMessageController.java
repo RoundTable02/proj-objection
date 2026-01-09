@@ -26,7 +26,6 @@ import java.util.List;
 @RestController
 public class ChatMessageController {
     private final ChatMessageService chatMessageService;
-    private final UserRepository userRepository;
 
     @Operation(summary = "메시지 전송", description = "채팅방에 메시지를 전송합니다. PARTICIPANT만 메시지 전송이 가능합니다.")
     @ApiResponses({
