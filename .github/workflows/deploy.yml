@@ -46,6 +46,19 @@ jobs:
     needs: build-and-push
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Copy docker-compose.yml to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: "docker-compose.yml"
+          target: "/home/${{ secrets.EC2_USERNAME }}/proj-objection"
+
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -54,26 +67,47 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
+            # 작업 디렉토리로 이동
+            cd /home/${{ secrets.EC2_USERNAME }}/proj-objection
+
+            # Docker Compose 설치 확인 (필요시)
+            if ! command -v docker-compose &> /dev/null; then
+              echo "Installing docker-compose..."
+              sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+            fi
+
+            # Redis 컨테이너 시작 (없으면 생성, 있으면 재시작)
+            docker-compose up -d redis
+
+            # Redis 컨테이너 정상 작동 확인
+            sleep 3
+            docker exec proj-objection-redis redis-cli PING || echo "Redis startup in progress..."
+
             # Docker Hub 로그인
             echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
             # 새 이미지 풀
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/proj-objection:latest
 
-            # 기존 컨테이너 중지 및 제거
+            # 기존 애플리케이션 컨테이너 중지 및 제거
             docker stop proj-objection 2>/dev/null || true
             docker rm proj-objection 2>/dev/null || true
 
-            # 새 컨테이너 실행
+            # 새 애플리케이션 컨테이너 실행 (Redis 네트워크에 연결)
             docker run -d \
               --name proj-objection \
               --restart unless-stopped \
+              --network proj-objection_default \
               -p 8080:8080 \
               -e SPRING_PROFILES_ACTIVE=prod \
               -e MYSQL_URL='${{ secrets.MYSQL_URL }}' \
               -e MYSQL_USERNAME='${{ secrets.MYSQL_USERNAME }}' \
               -e MYSQL_PASSWORD='${{ secrets.MYSQL_PASSWORD }}' \
               -e OPENAI_API_KEY='${{ secrets.OPENAI_API_KEY }}' \
+              -e REDIS_HOST=redis \
+              -e REDIS_PORT=6379 \
+              -e REDIS_PASSWORD= \
               -e TZ=Asia/Seoul \
               ${{ secrets.DOCKERHUB_USERNAME }}/proj-objection:latest
 
@@ -82,4 +116,7 @@ jobs:
 
             # 배포 확인
             sleep 5
+            echo "=== Application Container ==="
             docker ps | grep proj-objection
+            echo "=== Redis Container ==="
+            docker ps | grep proj-objection-redis

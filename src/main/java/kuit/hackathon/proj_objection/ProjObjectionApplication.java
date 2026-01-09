@@ -14,8 +14,4 @@ public class ProjObjectionApplication {
 		SpringApplication.run(ProjObjectionApplication.class, args);
 	}
 
-	@Bean
-	public ObjectMapper objectMapper() {
-		return new ObjectMapper();
-	}
 }

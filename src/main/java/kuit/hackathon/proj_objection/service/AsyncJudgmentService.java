@@ -28,6 +28,7 @@ public class AsyncJudgmentService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final FinalJudgementRepository finalJudgementRepository;
+    private final ChatRoomCacheService chatRoomCacheService;
 
     /**
      * 비동기로 AI 판결 분석 후 결과를 DB에 저장
@@ -71,6 +72,14 @@ public class AsyncJudgmentService {
             chatRoom.completeReport();
             chatRoomRepository.save(chatRoom);
             finalJudgementRepository.save(finalJudgement);
+
+            // Redis status 캐시 업데이트 (DONE 상태로 변경)
+            try {
+                chatRoomCacheService.setStatus(chatRoomId, ChatRoom.RoomStatus.DONE, null);
+                log.debug("Updated status cache to DONE for room {}", chatRoomId);
+            } catch (Exception e) {
+                log.warn("Failed to update status cache for room {}: {}", chatRoomId, e.getMessage());
+            }
 
             log.info("Judgment analysis completed and saved for chatRoomId: {}", chatRoomId);
 

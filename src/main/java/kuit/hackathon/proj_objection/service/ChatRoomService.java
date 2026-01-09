@@ -11,15 +11,18 @@ import kuit.hackathon.proj_objection.exception.*;
 import kuit.hackathon.proj_objection.repository.ChatRoomMemberRepository;
 import kuit.hackathon.proj_objection.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final AsyncJudgmentService asyncJudgmentService;
+    private final ChatRoomCacheService chatRoomCacheService;
 
     // 채팅방 생성
     @Transactional
@@ -99,6 +102,14 @@ public class ChatRoomService {
         chatRoom.requestExit(requester);
         chatRoomRepository.save(chatRoom);
 
+        // Redis status 캐시 업데이트
+        try {
+            String requesterNickname = chatRoom.getExitRequester().getNickname();
+            chatRoomCacheService.setStatus(chatRoomId, chatRoom.getStatus(), requesterNickname);
+        } catch (Exception e) {
+            log.warn("Failed to update status cache for room {}: {}", chatRoomId, e.getMessage());
+        }
+
         // 요청 응답
         return new ExitRequestResponseDto(
                 chatRoomId,
@@ -146,6 +157,15 @@ public class ChatRoomService {
 
         chatRoomRepository.save(chatRoom);
 
+        // Redis status 캐시 업데이트
+        try {
+            String requesterNickname = (chatRoom.getExitRequester() != null)
+                    ? chatRoom.getExitRequester().getNickname()
+                    : null;
+            chatRoomCacheService.setStatus(chatRoomId, chatRoom.getStatus(), requesterNickname);
+        } catch (Exception e) {
+            log.warn("Failed to update status cache for room {}: {}", chatRoomId, e.getMessage());
+        }
 
         // 판결 수락 시 비동기 AI 분석 및 DB 저장 트리거
         if (approve) {
