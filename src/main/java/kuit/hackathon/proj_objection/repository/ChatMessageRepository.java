@@ -12,4 +12,9 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
     // 특정 채팅방의 모든 메시지 조회 (시간 순서)
     List<ChatMessage> findByChatRoomOrderByCreatedAtAsc(ChatRoom chatRoom);
+
+    List<ChatMessage> findByChatRoomAndIdGreaterThanOrderByIdAsc(
+            ChatRoom chatRoom,
+            Long lastMessageId
+    );
 }

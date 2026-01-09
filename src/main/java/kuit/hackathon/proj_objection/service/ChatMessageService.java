@@ -53,7 +53,6 @@ public class ChatMessageService {
         ChatMessage message = ChatMessage.create(chatRoom, sender, content);
         ChatMessage savedMessage = chatMessageRepository.save(message);
 
-        // WebSocket으로 브로드캐스트
         ChatMessageDto messageDto = new ChatMessageDto(
                 savedMessage.getId(),
                 sender.getId(),
@@ -63,8 +62,9 @@ public class ChatMessageService {
                 ChatMessageDto.MessageType.OTHER // 브로드캐스트시에는 OTHER로 설정
         );
 
+        // WebSocket으로 브로드캐스트
         // /topic/chatroom/{chatRoomId}로 메시지 브로드캐스트
-        messagingTemplate.convertAndSend("/topic/chatroom/" + chatRoomId, messageDto);
+        // messagingTemplate.convertAndSend("/topic/chatroom/" + chatRoomId, messageDto);
 
         return messageDto;
     }
@@ -82,6 +82,38 @@ public class ChatMessageService {
 
         // 메시지 조회 (시간 역순)
         List<ChatMessage> messages = chatMessageRepository.findByChatRoomOrderByCreatedAtDesc(chatRoom);
+
+        // DTO 변환 (내가 보낸 메시지는 ME, 다른 사람 메시지는 OTHER)
+        return messages.stream()
+                .map(msg -> new ChatMessageListDto(
+                        msg.getId(),
+                        msg.getSender().getNickname(),
+                        msg.getContent(),
+                        msg.getCreatedAt(),
+                        msg.getSender().getId().equals(user.getId())
+                                ? ChatMessageDto.MessageType.ME
+                                : ChatMessageDto.MessageType.OTHER
+                ))
+                .collect(Collectors.toList());
+    }
+
+    // 채팅방의 마지막 메시지 이후의 메세지 조회 (시간 역순)
+    @Transactional(readOnly = true)
+    public List<ChatMessageListDto> getChatMessagesAfterLastMessage(Long chatRoomId, Long lastMessageId, User user) {
+        // 채팅방 존재 확인
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(ChatRoomNotFoundException::new);
+
+        // 사용자가 채팅방 멤버인지 확인
+        chatRoomMemberRepository.findByChatRoomAndUser(chatRoom, user)
+                .orElseThrow(ChatRoomMemberNotFoundException::new);
+
+        // 메시지 조회 (시간 역순)
+        // TODO 마지막 messageId 이후부터 읽어옴
+        List<ChatMessage> messages = chatMessageRepository.findByChatRoomAndIdGreaterThanOrderByIdAsc(
+                chatRoom, lastMessageId
+        );
+
 
         // DTO 변환 (내가 보낸 메시지는 ME, 다른 사람 메시지는 OTHER)
         return messages.stream()
