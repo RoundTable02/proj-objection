@@ -60,6 +60,16 @@ public class ChatRoomService {
         ChatRoomMember member = ChatRoomMember.create(chatRoom, user, role);
         chatRoomMemberRepository.save(member);
 
+        String roleKorean = role == ChatRoomMember.MemberRole.PARTICIPANT ? "대화 상대방" : "관전자";
+        JoinNotificationDto notification = new JoinNotificationDto(
+                "USER_JOINED",
+                user.getNickname(),
+                role.name(),
+                user.getNickname() + "님이 " + roleKorean + "으로 입장했습니다."
+        );
+
+        messagingTemplate.convertAndSend("/topic/chatroom/" + chatRoom.getId() + "/join", notification);
+
         return new JoinChatRoomResponseDto(
                 chatRoom.getId(),
                 chatRoom.getTitle(),
