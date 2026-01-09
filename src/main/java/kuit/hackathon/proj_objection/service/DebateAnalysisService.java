@@ -1,12 +1,17 @@
 package kuit.hackathon.proj_objection.service;
 
-import kuit.hackathon.proj_objection.dto.DebateStatusDto;
+import kuit.hackathon.proj_objection.entity.ChatRoom;
+import kuit.hackathon.proj_objection.entity.ChatRoomMember;
+import kuit.hackathon.proj_objection.exception.ChatRoomNotFoundException;
+import kuit.hackathon.proj_objection.repository.ChatRoomMemberRepository;
+import kuit.hackathon.proj_objection.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -15,27 +20,39 @@ import java.util.Map;
 public class DebateAnalysisService {
 
     private final OpenAiChatProcessor openAiChatProcessor;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final ChatRoomRepository chatRoomRepository;
+    private final ChatRoomMemberRepository chatRoomMemberRepository;
 
     /**
-     * 비동기로 토론 분석 후 결과를 브로드캐스트
+     * 비동기로 토론 분석 후 ChatRoomMember의 percent 업데이트
      * 별도 스레드 풀에서 실행되어 메인 메시지 전송 흐름을 블로킹하지 않음
      *
      * @param chatRoomId 분석할 채팅방 ID
      */
     @Async("aiAnalysisExecutor")
-    public void analyzeAndBroadcastAsync(Long chatRoomId) {
+    @Transactional
+    public void analyzeAndUpdateScores(Long chatRoomId) {
         try {
             log.debug("Starting AI analysis for chatRoomId: {}", chatRoomId);
 
             // OpenAI 분석 호출 (이 스레드에서 블로킹)
             Map<String, Integer> scores = openAiChatProcessor.analyzePercent(chatRoomId);
 
-            // 결과 브로드캐스트
-            DebateStatusDto statusDto = DebateStatusDto.of(scores);
-            messagingTemplate.convertAndSend("/topic/chatroom/" + chatRoomId, statusDto);
+            // ChatRoom 조회
+            ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                    .orElseThrow(ChatRoomNotFoundException::new);
 
-            log.debug("AI analysis completed and broadcast for chatRoomId: {}", chatRoomId);
+            // ChatRoomMember들의 percent 업데이트
+            List<ChatRoomMember> members = chatRoomMemberRepository.findByChatRoom(chatRoom);
+            for (ChatRoomMember member : members) {
+                String nickname = member.getUser().getNickname();
+                Integer score = scores.get(nickname);
+                if (score != null) {
+                    member.updatePercent(score);
+                }
+            }
+
+            log.debug("AI analysis completed and percent updated for chatRoomId: {}", chatRoomId);
 
         } catch (Exception e) {
             // 비동기 에러는 로그만 남기고 메인 흐름에 영향 없음

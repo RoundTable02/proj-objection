@@ -63,7 +63,7 @@ public class ChatMessageService {
         );
 
         // 비동기 AI 분석 트리거 (즉시 반환, 별도 스레드에서 실행)
-        debateAnalysisService.analyzeAndBroadcastAsync(chatRoomId);
+        debateAnalysisService.analyzeAndUpdateScores(chatRoomId);
 
         return messageDto;
     }
