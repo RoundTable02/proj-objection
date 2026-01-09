@@ -27,7 +27,6 @@ public class ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
-    private final SimpMessagingTemplate messagingTemplate;
 
     // 메시지 전송
     @Transactional
@@ -53,7 +52,6 @@ public class ChatMessageService {
         ChatMessage message = ChatMessage.create(chatRoom, sender, content);
         ChatMessage savedMessage = chatMessageRepository.save(message);
 
-        // WebSocket으로 브로드캐스트
         ChatMessageDto messageDto = new ChatMessageDto(
                 savedMessage.getId(),
                 sender.getId(),
@@ -62,9 +60,6 @@ public class ChatMessageService {
                 savedMessage.getCreatedAt(),
                 ChatMessageDto.MessageType.OTHER // 브로드캐스트시에는 OTHER로 설정
         );
-
-        // /topic/chatroom/{chatRoomId}로 메시지 브로드캐스트
-        messagingTemplate.convertAndSend("/topic/chatroom/" + chatRoomId, messageDto);
 
         return messageDto;
     }
@@ -96,4 +91,6 @@ public class ChatMessageService {
                 ))
                 .collect(Collectors.toList());
     }
+
+
 }

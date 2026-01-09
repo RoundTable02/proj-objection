@@ -55,7 +55,7 @@ public class ChatMessageController {
         return new BaseResponse<>(response);
     }
 
-    @Operation(summary = "메시지 목록 조회", description = "채팅방의 모든 메시지를 시간 역순으로 조회합니다. 채팅방 멤버만 조회 가능합니다.")
+    @Operation(summary = "메시지 전체 목록 조회", description = "채팅방의 모든 메시지를 시간 역순으로 조회합니다. 채팅방 멤버만 조회 가능합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "메시지 목록 조회 성공"),
             @ApiResponse(responseCode = "401", description = "로그인 필요",
@@ -75,31 +75,4 @@ public class ChatMessageController {
         return new BaseResponse<>(messages);
     }
 
-    // WebSocket: 메시지 전송 (STOMP) - Swagger 문서화 대상 아님
-    @MessageMapping("/chatroom/{chatRoomId}")
-    public void sendMessageViaWebSocket(
-            @DestinationVariable Long chatRoomId,
-            @Payload SendMessageRequestDto request,
-            SimpMessageHeaderAccessor headerAccessor
-    ) {
-        System.out.println("=== WebSocket Message Received ===");
-        System.out.println("ChatRoom ID: " + chatRoomId);
-        System.out.println("Content: " + request.getContent());
-        System.out.println("Session Attributes: " + headerAccessor.getSessionAttributes());
-
-        // WebSocket 세션에서 userId 추출
-        Long userId = (Long) headerAccessor.getSessionAttributes().get("userId");
-        System.out.println("userId from WebSocket: " + userId);
-        System.out.println("==================================");
-
-        if (userId == null) {
-            throw new UserNotFoundException("User not logged in");
-        }
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
-
-        // 메시지 전송 (서비스에서 브로드캐스트 처리)
-        chatMessageService.sendMessage(chatRoomId, user, request.getContent());
-    }
 }

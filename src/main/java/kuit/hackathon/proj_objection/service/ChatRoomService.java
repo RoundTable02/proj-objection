@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
-    private final SimpMessagingTemplate messagingTemplate;
 
     // 채팅방 생성
     @Transactional
@@ -121,14 +120,6 @@ public class ChatRoomService {
         chatRoom.requestExit(requester);
         chatRoomRepository.save(chatRoom);
 
-        // WebSocket으로 다른 PARTICIPANT들에게 알림 -> 브로드캐스트용
-        ExitNotificationDto notification = new ExitNotificationDto(
-                "EXIT_REQUEST",
-                requester.getNickname(),
-                "지금까지의 대화를 바탕으로 판결을 요청하시겠습니까?"
-        );
-        messagingTemplate.convertAndSend("/topic/chatroom/" + chatRoomId + "/exit", notification);
-
         // 요청 응답
         return new ExitRequestResponseDto(
                 chatRoomId,
@@ -162,29 +153,17 @@ public class ChatRoomService {
         }
 
         String message;
-        String notificationType;
 
-        if (approve) {
-            // 수락
+        if (approve) {      // 수락
             chatRoom.approveExit();
             message = "판결이 확정되었습니다.";
-            notificationType = "EXIT_APPROVED";
-        } else {
-            // 거절
+        } else {            // 거절
             chatRoom.rejectExit();
             message = "판결 요청이 거절되었습니다.";
-            notificationType = "EXIT_REJECTED";
         }
 
         chatRoomRepository.save(chatRoom);
 
-        // WebSocket으로 알림
-        ExitNotificationDto notification = new ExitNotificationDto(
-                notificationType,
-                decider.getNickname(),
-                message
-        );
-        messagingTemplate.convertAndSend("/topic/chatroom/" + chatRoomId + "/exit", notification);
 
         return new ExitDecisionResponseDto(
                 chatRoomId,
