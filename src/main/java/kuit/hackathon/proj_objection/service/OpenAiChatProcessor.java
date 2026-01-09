@@ -69,7 +69,7 @@ public class OpenAiChatProcessor {
             양측이 비슷한 주장을 펼쳤다면, 두 사용자 모두에게 비슷한 점수를 부여하세요.
             점수는 항상 양의 정수로 응답해야 하며, 소수점 이하는 버리세요.
 
-            judgment_comment에서는 재판 전체의 내용에 대한 코멘트를 남기세요.
+            judgment_comment에서는 재판 전체의 내용에 대한 코멘트를 남기세요. 마지막 줄에는 "따라서 <원고/피고> 승리!" 형식으로 승자를 명시하세요.
             winner_reason에서는 승자가 가산점을 받은 이유를 구체적으로 설명하세요.
             loser_reason에서는 패자가 감점된 이유를 구체적으로 설명하세요.
 
@@ -104,11 +104,11 @@ public class OpenAiChatProcessor {
         List<ChatMessage> messages = getMessagesChronological(chatRoom);
         String formattedMessages = formatMessagesForAi(messages, participants);
 
-//        String response = callOpenAi(PERCENT_SYSTEM_PROMPT, formattedMessages);
-//        int scoreA = parsePercentResponse(response);
+       String response = callOpenAi(PERCENT_SYSTEM_PROMPT, formattedMessages);
+       int scoreA = parsePercentResponse(response);
 
         // 0 - 100 사이의 임의의 점수 생성
-        int scoreA = (int) (Math.random() * 101);
+        // int scoreA = (int) (Math.random() * 101);
         int scoreB = 100 - scoreA;
 
         Map<String, Integer> result = new HashMap<>();
@@ -130,8 +130,8 @@ public class OpenAiChatProcessor {
         List<ChatMessage> messages = getMessagesChronological(chatRoom);
         String formattedMessages = formatMessagesForAi(messages, participants);
 
-//        String response = callOpenAi(DETAILED_SYSTEM_PROMPT, formattedMessages);
-        String response = mockResponse();
+       String response = callOpenAi(DETAILED_SYSTEM_PROMPT, formattedMessages);
+        // String response = mockResponse();
         return parseDetailedResponse(response, participants);
     }
 
