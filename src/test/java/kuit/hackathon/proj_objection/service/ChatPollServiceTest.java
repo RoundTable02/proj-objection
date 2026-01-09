@@ -10,6 +10,7 @@ import kuit.hackathon.proj_objection.exception.ChatRoomNotFoundException;
 import kuit.hackathon.proj_objection.repository.ChatMessageRepository;
 import kuit.hackathon.proj_objection.repository.ChatRoomMemberRepository;
 import kuit.hackathon.proj_objection.repository.ChatRoomRepository;
+import kuit.hackathon.proj_objection.service.ChatRoomCacheService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,6 +38,9 @@ class ChatPollServiceTest {
 
     @Mock
     private ChatMessageRepository chatMessageRepository;
+
+    @Mock
+    private ChatRoomCacheService chatRoomCacheService;
 
     @InjectMocks
     private ChatPollService chatPollService;
@@ -66,7 +70,7 @@ class ChatPollServiceTest {
         given(chatRoomRepository.findById(chatRoomId)).willReturn(Optional.of(chatRoom));
         given(chatRoomMemberRepository.findByChatRoomAndUser(chatRoom, creator)).willReturn(Optional.of(creatorMember));
         given(chatRoomMemberRepository.findByChatRoom(chatRoom)).willReturn(List.of(creatorMember, participantMember));
-        given(chatMessageRepository.findByChatRoomAndIdGreaterThanOrderByIdAsc(chatRoom, lastMessageId))
+        given(chatMessageRepository.findMessagesWithSender(chatRoom, lastMessageId))
                 .willReturn(List.of(msg1, msg2));
 
         // when
@@ -79,7 +83,7 @@ class ChatPollServiceTest {
         assertThat(result.getMessages().get(1).getMessageId()).isEqualTo(12L);
         assertThat(result.getMessages().get(1).getSenderNickname()).isEqualTo("영희");
 
-        then(chatMessageRepository).should(times(1)).findByChatRoomAndIdGreaterThanOrderByIdAsc(chatRoom, lastMessageId);
+        then(chatMessageRepository).should(times(1)).findMessagesWithSender(chatRoom, lastMessageId);
     }
 
     @Test
@@ -101,7 +105,7 @@ class ChatPollServiceTest {
         given(chatRoomRepository.findById(chatRoomId)).willReturn(Optional.of(chatRoom));
         given(chatRoomMemberRepository.findByChatRoomAndUser(chatRoom, creator)).willReturn(Optional.of(creatorMember));
         given(chatRoomMemberRepository.findByChatRoom(chatRoom)).willReturn(List.of(creatorMember));
-        given(chatMessageRepository.findByChatRoomAndIdGreaterThanOrderByIdAsc(chatRoom, 0L))
+        given(chatMessageRepository.findMessagesWithSender(chatRoom, 0L))
                 .willReturn(List.of(msg1));
 
         // when
@@ -109,7 +113,7 @@ class ChatPollServiceTest {
 
         // then
         assertThat(result.getMessages()).hasSize(1);
-        then(chatMessageRepository).should(times(1)).findByChatRoomAndIdGreaterThanOrderByIdAsc(chatRoom, 0L);
+        then(chatMessageRepository).should(times(1)).findMessagesWithSender(chatRoom, 0L);
     }
 
     @Test
@@ -165,7 +169,7 @@ class ChatPollServiceTest {
         given(chatRoomRepository.findById(chatRoomId)).willReturn(Optional.of(chatRoom));
         given(chatRoomMemberRepository.findByChatRoomAndUser(chatRoom, participant)).willReturn(Optional.of(participantMember));
         given(chatRoomMemberRepository.findByChatRoom(chatRoom)).willReturn(List.of(creatorMember, participantMember));
-        given(chatMessageRepository.findByChatRoomAndIdGreaterThanOrderByIdAsc(chatRoom, 0L)).willReturn(List.of());
+        given(chatMessageRepository.findMessagesWithSender(chatRoom, 0L)).willReturn(List.of());
 
         // when
         ChatPollResponseDto result = chatPollService.poll(chatRoomId, 0L, participant);
@@ -189,7 +193,7 @@ class ChatPollServiceTest {
         given(chatRoomRepository.findById(chatRoomId)).willReturn(Optional.of(chatRoom));
         given(chatRoomMemberRepository.findByChatRoomAndUser(chatRoom, creator)).willReturn(Optional.of(creatorMember));
         given(chatRoomMemberRepository.findByChatRoom(chatRoom)).willReturn(List.of(creatorMember));
-        given(chatMessageRepository.findByChatRoomAndIdGreaterThanOrderByIdAsc(chatRoom, 0L)).willReturn(List.of());
+        given(chatMessageRepository.findMessagesWithSender(chatRoom, 0L)).willReturn(List.of());
 
         // when
         ChatPollResponseDto result = chatPollService.poll(chatRoomId, 0L, creator);
@@ -220,7 +224,7 @@ class ChatPollServiceTest {
         given(chatRoomRepository.findById(chatRoomId)).willReturn(Optional.of(chatRoom));
         given(chatRoomMemberRepository.findByChatRoomAndUser(chatRoom, creator)).willReturn(Optional.of(creatorMember));
         given(chatRoomMemberRepository.findByChatRoom(chatRoom)).willReturn(List.of(creatorMember, participantMember, observerMember));
-        given(chatMessageRepository.findByChatRoomAndIdGreaterThanOrderByIdAsc(chatRoom, 0L)).willReturn(List.of());
+        given(chatMessageRepository.findMessagesWithSender(chatRoom, 0L)).willReturn(List.of());
 
         // when
         ChatPollResponseDto result = chatPollService.poll(chatRoomId, 0L, creator);
@@ -247,7 +251,7 @@ class ChatPollServiceTest {
         given(chatRoomRepository.findById(chatRoomId)).willReturn(Optional.of(chatRoom));
         given(chatRoomMemberRepository.findByChatRoomAndUser(chatRoom, creator)).willReturn(Optional.of(creatorMember));
         given(chatRoomMemberRepository.findByChatRoom(chatRoom)).willReturn(List.of(creatorMember));
-        given(chatMessageRepository.findByChatRoomAndIdGreaterThanOrderByIdAsc(chatRoom, 0L)).willReturn(List.of());
+        given(chatMessageRepository.findMessagesWithSender(chatRoom, 0L)).willReturn(List.of());
 
         // when
         ChatPollResponseDto result = chatPollService.poll(chatRoomId, 0L, creator);
