@@ -104,7 +104,7 @@ erDiagram
 
     FINAL_JUDGEMENT {
         BIGINT id PK
-        BIGINT chat_room_id FK UK
+        BIGINT chat_room_id FK
         VARCHAR winner
         VARCHAR plaintiff
         VARCHAR defendant
