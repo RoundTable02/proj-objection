@@ -11,6 +11,8 @@ import kuit.hackathon.proj_objection.exception.*;
 import kuit.hackathon.proj_objection.repository.ChatRoomMemberRepository;
 import kuit.hackathon.proj_objection.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,6 +66,21 @@ public class ChatRoomService {
         // 멤버 추가
         ChatRoomMember member = ChatRoomMember.create(chatRoom, user, role);
         chatRoomMemberRepository.save(member);
+
+        // PARTICIPANT 입장 시 Redis percent 캐시 갱신
+        if (role == ChatRoomMember.MemberRole.PARTICIPANT) {
+            try {
+                Map<String, Integer> percent = chatRoomMemberRepository.findByChatRoom(chatRoom).stream()
+                        .filter(m -> m.getRole() == ChatRoomMember.MemberRole.PARTICIPANT)
+                        .collect(java.util.stream.Collectors.toMap(
+                                m -> m.getUser().getNickname(),
+                                ChatRoomMember::getPercent
+                        ));
+                chatRoomCacheService.setPercent(chatRoom.getId(), percent);
+            } catch (Exception e) {
+                log.warn("Failed to update percent cache for room {}: {}", chatRoom.getId(), e.getMessage());
+            }
+        }
 
         return new JoinChatRoomResponseDto(
                 chatRoom.getId(),

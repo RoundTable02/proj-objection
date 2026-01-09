@@ -7,7 +7,9 @@ Spring Boot 기반의 백엔드 서버 프로젝트입니다.
 - Java 17
 - Spring Boot 4.0.1
 - Spring Data JPA
+- Spring Data Redis
 - MySQL 8.0.32
+- Redis 7.x
 - Gradle 9.2.1
 - springdoc-openapi (Swagger UI)
 
@@ -17,6 +19,7 @@ Spring Boot 기반의 백엔드 서버 프로젝트입니다.
 
 - JDK 17
 - MySQL 8.0+
+- Redis 7.0+
 
 ### 데이터베이스 설정
 
@@ -25,6 +28,21 @@ CREATE DATABASE objection_db;
 CREATE USER 'objection_admin'@'localhost' IDENTIFIED BY 'objection1234';
 GRANT ALL PRIVILEGES ON objection_db.* TO 'objection_admin'@'localhost';
 FLUSH PRIVILEGES;
+```
+
+### Redis 실행 (로컬)
+
+이 프로젝트는 **채팅 폴링 최적화(미변경 요청 비효율 개선)**를 위해 Redis 캐시를 사용합니다.
+
+가장 간단한 방법은 `docker-compose.yml`로 Redis만 띄우는 것입니다:
+
+```bash
+# Redis 실행
+docker compose up -d redis
+# (구버전) docker-compose up -d redis
+
+# Redis 중지/삭제
+docker compose down
 ```
 
 ### 실행
@@ -365,7 +383,7 @@ springdoc:
 
 ### 개발 환경
 
-`application.yml`에서 직접 DB 정보를 설정합니다.
+`application.yml`에서 직접 DB/Redis 정보를 설정합니다.
 
 ### 운영 환경
 
@@ -373,6 +391,10 @@ springdoc:
 - `MYSQL_URL`
 - `MYSQL_USERNAME`
 - `MYSQL_PASSWORD`
+- `OPENAI_API_KEY`
+- `REDIS_HOST` (default: `localhost`)
+- `REDIS_PORT` (default: `6379`)
+- `REDIS_PASSWORD` (default: empty)
 
 ### Hibernate DDL
 
@@ -410,6 +432,7 @@ GitHub 저장소 → Settings → Secrets and variables → Actions에서 설정
 | `MYSQL_URL` | RDS 접속 URL | `jdbc:mysql://xxx.rds.amazonaws.com:3306/objection_db?serverTimezone=Asia/Seoul` |
 | `MYSQL_USERNAME` | RDS 사용자명 | `admin` |
 | `MYSQL_PASSWORD` | RDS 비밀번호 | `your-password` |
+| `OPENAI_API_KEY` | OpenAI API Key | `sk-...` |
 
 ### EC2 사전 준비
 
@@ -435,12 +458,20 @@ docker --version
 # 빌드
 docker build -t proj-objection:test .
 
+# Redis 실행 (먼저)
+docker compose up -d redis
+
 # 실행
 docker run -d -p 8080:8080 \
+  --network proj-objection_default \
   -e SPRING_PROFILES_ACTIVE=prod \
   -e MYSQL_URL='jdbc:mysql://localhost:3306/objection_db?serverTimezone=Asia/Seoul' \
   -e MYSQL_USERNAME='objection_admin' \
   -e MYSQL_PASSWORD='objection1234' \
+  -e OPENAI_API_KEY='your-openai-api-key' \
+  -e REDIS_HOST='redis' \
+  -e REDIS_PORT='6379' \
+  -e REDIS_PASSWORD='' \
   proj-objection:test
 
 # 로그 확인
