@@ -75,25 +75,4 @@ public class ChatMessageController {
         return new BaseResponse<>(messages);
     }
 
-
-    @Operation(summary = "메시지 마지막 메세지 이후 목록 조회", description = "채팅방의 모든 메시지를 시간 역순으로 조회합니다. 채팅방 멤버만 조회 가능합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "메시지 목록 조회 성공"),
-            @ApiResponse(responseCode = "401", description = "로그인 필요",
-                    content = @Content(schema = @Schema(implementation = BaseErrorResponse.class))),
-            @ApiResponse(responseCode = "403", description = "채팅방 멤버가 아님",
-                    content = @Content(schema = @Schema(implementation = BaseErrorResponse.class))),
-            @ApiResponse(responseCode = "404", description = "채팅방을 찾을 수 없음",
-                    content = @Content(schema = @Schema(implementation = BaseErrorResponse.class)))
-    })
-    @GetMapping("/chat/poll")
-    public BaseResponse<List<ChatMessageListDto>> getChatMessagesAfterLastMessage(
-            @RequestParam Long chatRoomId,
-            @RequestParam(required = false, defaultValue = "0") Long lastMessageId,
-            @Parameter(hidden = true) @RequestHeader(value = "X-SESSION-TOKEN", required = false) String sessionToken,
-            @Parameter(hidden = true) @LoginUser User user
-    ) {
-        List<ChatMessageListDto> messages = chatMessageService.getChatMessagesAfterLastMessage(chatRoomId, lastMessageId, user);
-        return new BaseResponse<>(messages);
-    }
 }
