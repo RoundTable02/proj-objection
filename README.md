@@ -57,6 +57,78 @@ src/main/java/kuit/hackathon/proj_objection/
 └── annotation/     # 커스텀 어노테이션
 ```
 
+## ERD (Mermaid)
+
+> Entity 기준으로 작성한 ERD입니다. (컬럼명은 JPA/Hibernate 네이밍 전략에 따라 실제 DB에서는 달라질 수 있습니다.)
+
+```mermaid
+erDiagram
+    USER {
+        BIGINT id PK
+        VARCHAR nickname UK
+        VARCHAR password
+        DATETIME created_at
+        DATETIME modified_at
+    }
+
+    CHAT_ROOM {
+        BIGINT id PK
+        VARCHAR title
+        VARCHAR participant_code UK
+        VARCHAR observer_code UK
+        BIGINT creator_id FK
+        VARCHAR status
+        BIGINT exit_requester_id FK
+        DATETIME created_at
+        DATETIME modified_at
+    }
+
+    CHAT_ROOM_MEMBER {
+        BIGINT id PK
+        BIGINT chat_room_id FK
+        BIGINT user_id FK
+        VARCHAR role
+        INT percent
+        DATETIME created_at
+        DATETIME modified_at
+    }
+
+    CHAT_MESSAGE {
+        BIGINT id PK
+        BIGINT chat_room_id FK
+        BIGINT sender_id FK
+        TEXT content
+        DATETIME created_at
+        DATETIME modified_at
+    }
+
+    FINAL_JUDGEMENT {
+        BIGINT id PK
+        BIGINT chat_room_id FK UK
+        VARCHAR winner
+        VARCHAR plaintiff
+        VARCHAR defendant
+        INT winner_logic_score
+        INT winner_empathy_score
+        TEXT judgment_comment
+        TEXT winner_reason
+        TEXT loser_reason
+        DATETIME created_at
+        DATETIME modified_at
+    }
+
+    USER ||--o{ CHAT_ROOM : creates
+    USER ||--o{ CHAT_ROOM : requests_exit
+
+    CHAT_ROOM ||--o{ CHAT_ROOM_MEMBER : has
+    USER ||--o{ CHAT_ROOM_MEMBER : joins
+
+    CHAT_ROOM ||--o{ CHAT_MESSAGE : has
+    USER ||--o{ CHAT_MESSAGE : sends
+
+    CHAT_ROOM ||--o| FINAL_JUDGEMENT : has
+```
+
 ## 코딩 컨벤션
 
 ### 레이어 구조
