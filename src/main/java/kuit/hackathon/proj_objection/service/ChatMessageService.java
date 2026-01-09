@@ -27,6 +27,7 @@ public class ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
+    private final DebateAnalysisService debateAnalysisService;
 
     // 메시지 전송
     @Transactional
@@ -60,6 +61,9 @@ public class ChatMessageService {
                 savedMessage.getCreatedAt(),
                 ChatMessageDto.MessageType.OTHER // 브로드캐스트시에는 OTHER로 설정
         );
+
+        // 비동기 AI 분석 트리거 (즉시 반환, 별도 스레드에서 실행)
+        debateAnalysisService.analyzeAndBroadcastAsync(chatRoomId);
 
         return messageDto;
     }
