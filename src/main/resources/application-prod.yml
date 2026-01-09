@@ -5,7 +5,7 @@ spring:
     password: ${MYSQL_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: update #주의 사용에 따라 create, update 사용 후 none으로 변경해주세요
+      ddl-auto: create #주의 사용에 따라 create, update 사용 후 none으로 변경해주세요
     properties:
       hibernate:
         default_batch_fetch_size: 100
