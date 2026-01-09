@@ -55,17 +55,21 @@ public class ChatRoomService {
         ChatRoom chatRoom = chatRoomRepository.findByInviteCode(inviteCode)
                 .orElseThrow(InvalidInviteCodeException::new);
 
-        // 이미 입장했는지 확인
-        if (chatRoomMemberRepository.existsByChatRoomAndUser(chatRoom, user)) {
-            throw new AlreadyJoinedChatRoomException();
+        if(chatRoomMemberRepository.countByChatRoomAndRoleAndUserNot(chatRoom, ChatRoomMember.MemberRole.PARTICIPANT, user)==2){
+            throw new ChatRoomFullException();
         }
 
-        // 초대 코드 타입에 따라 역할 결정
-        ChatRoomMember.MemberRole role = determineRole(chatRoom, inviteCode);
+        // 이미 입장했는지 확인
+        ChatRoomMember member = chatRoomMemberRepository.findByChatRoomAndUser(chatRoom, user)
+                .orElseGet(() -> {
+                    // 아직 멤버가 아니면 새로 생성
+                    ChatRoomMember.MemberRole role = determineRole(chatRoom, inviteCode);
+                    ChatRoomMember newMember = ChatRoomMember.create(chatRoom, user, role);
+                    return chatRoomMemberRepository.save(newMember);
+                });
 
-        // 멤버 추가
-        ChatRoomMember member = ChatRoomMember.create(chatRoom, user, role);
-        chatRoomMemberRepository.save(member);
+
+        ChatRoomMember.MemberRole role = member.getRole();
 
         // PARTICIPANT 입장 시 Redis percent 캐시 갱신
         if (role == ChatRoomMember.MemberRole.PARTICIPANT) {
@@ -100,9 +104,6 @@ public class ChatRoomService {
                 .orElseThrow(ChatRoomNotFoundException::new);
 
         // 종료된 채팅방 확인 -> 이미 종료된 채팅방을 또 종료하려고 하는가
-//        if (chatRoom.getStatus() == ChatRoom.RoomStatus.DONE) {
-//            throw new ChatRoomClosedException();
-//        }
         if (chatRoom.isDone()){
             throw new ChatRoomClosedException();
         }
@@ -142,9 +143,6 @@ public class ChatRoomService {
                 .orElseThrow(ChatRoomNotFoundException::new);
 
         // 종료 요청 확인
-//        if (chatRoom.getStatus() != ChatRoom.RoomStatus.REQUEST_FINISH) {
-//            throw new NoExitRequestException();
-//        }
         if (!chatRoom.isRequestFinish()){
             throw new NoExitRequestException();
         }

@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "채팅 폴링", description = "채팅방 폴링 API")
 @RequiredArgsConstructor
 @RestController
-@CrossOrigin(originPatterns = "*", allowCredentials = "true")
 public class ChatPollController {
 
     private final ChatPollService chatPollService;

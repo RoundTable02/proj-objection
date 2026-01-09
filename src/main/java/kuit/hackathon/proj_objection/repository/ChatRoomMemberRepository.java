@@ -18,4 +18,7 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
 
     // 특정 채팅방에 특정 사용자가 이미 참여했는지 확인
     boolean existsByChatRoomAndUser(ChatRoom chatRoom, User user);
+
+    // 로그인된 사용자 외의 PARTICIPANT role을 가진 사람이 몇명인지 확인
+    int countByChatRoomAndRoleAndUserNot(ChatRoom chatRoom, ChatRoomMember.MemberRole role, User user);
 }
