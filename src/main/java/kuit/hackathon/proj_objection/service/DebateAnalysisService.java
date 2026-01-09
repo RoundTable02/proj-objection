@@ -22,6 +22,7 @@ public class DebateAnalysisService {
     private final OpenAiChatProcessor openAiChatProcessor;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
+    private final ChatRoomCacheService chatRoomCacheService;
 
     /**
      * 비동기로 토론 분석 후 ChatRoomMember의 percent 업데이트
@@ -50,6 +51,15 @@ public class DebateAnalysisService {
                 if (score != null) {
                     member.updatePercent(score);
                 }
+            }
+
+            // Redis percent 캐시 업데이트
+            try {
+                chatRoomCacheService.setPercent(chatRoomId, scores);
+                log.debug("Updated percent cache for room {}", chatRoomId);
+            } catch (Exception e) {
+                log.warn("Failed to update percent cache for room {}: {}", chatRoomId, e.getMessage());
+                // Redis 실패해도 DB는 이미 업데이트되었으므로 다음 폴링에서 재캐싱됨
             }
 
             log.debug("AI analysis completed and percent updated for chatRoomId: {}", chatRoomId);

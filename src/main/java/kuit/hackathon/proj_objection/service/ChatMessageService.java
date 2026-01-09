@@ -14,6 +14,7 @@ import kuit.hackathon.proj_objection.repository.ChatMessageRepository;
 import kuit.hackathon.proj_objection.repository.ChatRoomMemberRepository;
 import kuit.hackathon.proj_objection.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -22,6 +23,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ChatMessageService {
@@ -29,6 +31,7 @@ public class ChatMessageService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final DebateAnalysisService debateAnalysisService;
+    private final ChatRoomCacheService chatRoomCacheService;
 
     // 메시지 전송
     @Transactional
@@ -59,6 +62,14 @@ public class ChatMessageService {
         // 메시지 저장
         ChatMessage message = ChatMessage.create(chatRoom, sender, content);
         ChatMessage savedMessage = chatMessageRepository.save(message);
+
+        // Redis lastMessageId 캐시 업데이트
+        try {
+            chatRoomCacheService.setLastMessageId(chatRoomId, savedMessage.getId());
+        } catch (Exception e) {
+            log.warn("Failed to update lastMessageId cache for room {}: {}", chatRoomId, e.getMessage());
+            // Redis 실패해도 메시지 전송은 계속 진행
+        }
 
         ChatMessageDto messageDto = new ChatMessageDto(
                 savedMessage.getId(),
