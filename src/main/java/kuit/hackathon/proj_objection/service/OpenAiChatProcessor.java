@@ -104,8 +104,11 @@ public class OpenAiChatProcessor {
         List<ChatMessage> messages = getMessagesChronological(chatRoom);
         String formattedMessages = formatMessagesForAi(messages, participants);
 
-        String response = callOpenAi(PERCENT_SYSTEM_PROMPT, formattedMessages);
-        int scoreA = parsePercentResponse(response);
+//        String response = callOpenAi(PERCENT_SYSTEM_PROMPT, formattedMessages);
+//        int scoreA = parsePercentResponse(response);
+
+        // 0 - 100 사이의 임의의 점수 생성
+        int scoreA = (int) (Math.random() * 101);
         int scoreB = 100 - scoreA;
 
         Map<String, Integer> result = new HashMap<>();
@@ -127,11 +130,29 @@ public class OpenAiChatProcessor {
         List<ChatMessage> messages = getMessagesChronological(chatRoom);
         String formattedMessages = formatMessagesForAi(messages, participants);
 
-        String response = callOpenAi(DETAILED_SYSTEM_PROMPT, formattedMessages);
+//        String response = callOpenAi(DETAILED_SYSTEM_PROMPT, formattedMessages);
+        String response = mockResponse();
         return parseDetailedResponse(response, participants);
     }
 
     // ========== 테스트용 메서드 ==========
+
+    /**
+     * mock response
+     */
+
+    private String mockResponse() {
+        return """
+                {
+                    "winner": "원고",
+                    "winner_logic_score": 85,
+                    "winner_empathy_score": 90,
+                    "judgment_comment": "원고는 논리적인 근거를 잘 제시했으며, 감정적으로도 상대방을 배려하는 태도를 보였습니다.",
+                    "winner_reason": "원고는 구체적인 사례와 데이터를 활용하여 자신의 주장을 뒷받침했습니다.",
+                    "loser_reason": "피고는 감정적인 비난을 사용하여 신뢰도를 떨어뜨렸습니다."
+                }
+                """;
+    }
 
     /**
      * 퍼센트 분석 프롬프트 테스트: formattedMessages를 직접 받아서 AI 응답을 그대로 반환
@@ -207,6 +228,8 @@ public class OpenAiChatProcessor {
                     .append(message.getContent())
                     .append("\n");
         }
+
+        log.info(sb.toString());
 
         return sb.toString().trim();
     }

@@ -34,6 +34,10 @@ public class ChatRoomMember extends BaseEntity{
         return chatRoomMember;
     }
 
+    public void updatePercent(int percent) {
+        this.percent = percent;
+    }
+
     public enum MemberRole {
         PARTICIPANT,
         OBSERVER

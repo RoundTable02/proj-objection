@@ -14,9 +14,10 @@ import kuit.hackathon.proj_objection.repository.ChatMessageRepository;
 import kuit.hackathon.proj_objection.repository.ChatRoomMemberRepository;
 import kuit.hackathon.proj_objection.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +28,7 @@ public class ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
+    private final DebateAnalysisService debateAnalysisService;
 
     // 메시지 전송
     @Transactional
@@ -59,6 +61,17 @@ public class ChatMessageService {
                 savedMessage.getContent(),
                 savedMessage.getCreatedAt(),
                 ChatMessageDto.MessageType.OTHER // 브로드캐스트시에는 OTHER로 설정
+        );
+
+        // 트랜잭션 커밋 후 비동기 AI 분석 트리거
+        // 메시지가 DB에 완전히 커밋된 후 분석이 시작되어 레이스 컨디션 방지
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        debateAnalysisService.analyzeAndUpdateScores(chatRoomId);
+                    }
+                }
         );
 
         return messageDto;
