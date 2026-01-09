@@ -229,6 +229,8 @@ public class OpenAiChatProcessor {
                     .append("\n");
         }
 
+        log.info(sb.toString());
+
         return sb.toString().trim();
     }
 
