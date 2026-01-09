@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
+    private final AsyncJudgmentService asyncJudgmentService;
 
     // 채팅방 생성
     @Transactional
@@ -164,6 +165,11 @@ public class ChatRoomService {
 
         chatRoomRepository.save(chatRoom);
 
+
+        // 판결 수락 시 비동기 AI 분석 트리거
+        if (approve) {
+            asyncJudgmentService.analyzeAndBroadcast(chatRoomId);
+        }
 
         return new ExitDecisionResponseDto(
                 chatRoomId,

@@ -293,6 +293,109 @@ stompClient.subscribe(`/topic/chatroom/${chatRoomId}/exit`, function(message) {
 
 ---
 
+## 최종 판결 알림 (AI 분석) (Server -> Client)
+
+### Subscribe Destination
+
+```
+/topic/chatroom/{chatRoomId}/exit
+```
+
+판결이 승인되면 AI가 비동기로 분석을 수행하고 결과를 브로드캐스트합니다.
+
+**타이밍**: EXIT_APPROVED 알림이 먼저 전송되고, 수 초 후 AI 분석 완료 시 FINAL_JUDGMENT 또는 JUDGMENT_ERROR가 전송됩니다.
+
+### Response Body (성공)
+
+```json
+{
+    "type": "FINAL_JUDGMENT",
+    "winner": "홍길동",
+    "plaintiff": "홍길동",
+    "defendant": "김철수",
+    "winnerLogicScore": 85,
+    "winnerEmpathyScore": 72,
+    "judgmentComment": "원고가 구체적인 근거를 제시하며 논리적으로 주장을 펼쳤습니다.",
+    "winnerReason": "구체적 사례와 논리적 근거 제시",
+    "loserReason": "감정적 대응으로 일관"
+}
+```
+
+### Response Body (실패)
+
+```json
+{
+    "type": "JUDGMENT_ERROR",
+    "errorMessage": "AI 분석 중 오류가 발생했습니다."
+}
+```
+
+### 필드 설명
+
+#### FINAL_JUDGMENT (성공 시)
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `type` | String | 알림 타입 (`FINAL_JUDGMENT`) |
+| `winner` | String | 승자 닉네임 |
+| `plaintiff` | String | 원고 닉네임 (채팅방 생성자) |
+| `defendant` | String | 피고 닉네임 (상대방) |
+| `winnerLogicScore` | Integer | 승자의 논리력 점수 (0-100) |
+| `winnerEmpathyScore` | Integer | 승자의 공감력 점수 (0-100) |
+| `judgmentComment` | String | 심판 코멘트 |
+| `winnerReason` | String | 승자가 가산점을 받은 이유 |
+| `loserReason` | String | 패자가 감점된 이유 |
+
+#### JUDGMENT_ERROR (실패 시)
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `type` | String | 알림 타입 (`JUDGMENT_ERROR`) |
+| `errorMessage` | String | 에러 메시지 |
+
+### 예제 (JavaScript)
+
+```javascript
+// 종료 및 판결 알림 구독 (동일 토픽)
+stompClient.subscribe(`/topic/chatroom/${chatRoomId}/exit`, function(message) {
+    const notification = JSON.parse(message.body);
+
+    switch (notification.type) {
+        case 'EXIT_REQUEST':
+            // 판결 요청 UI 표시
+            showExitRequestDialog(notification.requesterNickname, notification.message);
+            break;
+        case 'EXIT_APPROVED':
+            // 채팅방 종료 알림 (AI 분석 대기 중...)
+            showExitApproved(notification.message);
+            break;
+        case 'EXIT_REJECTED':
+            // 판결 거절 알림
+            showNotification(notification.message);
+            break;
+        case 'FINAL_JUDGMENT':
+            // 최종 판결 결과 표시
+            showJudgmentResult({
+                winner: notification.winner,
+                plaintiff: notification.plaintiff,
+                defendant: notification.defendant,
+                logicScore: notification.winnerLogicScore,
+                empathyScore: notification.winnerEmpathyScore,
+                comment: notification.judgmentComment,
+                winnerReason: notification.winnerReason,
+                loserReason: notification.loserReason
+            });
+            break;
+        case 'JUDGMENT_ERROR':
+            // AI 분석 실패 알림
+            showError(notification.errorMessage);
+            break;
+    }
+});
+```
+
+---
+
 ## 에러 처리
 
 ### 인증 실패
