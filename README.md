@@ -1,6 +1,13 @@
-# Objection Project
+# Objection Project [이의있오]
 
 Spring Boot 기반의 백엔드 서버 프로젝트입니다.
+
+해당 프로젝트는 KUIT 6th Hackathon을 위해 개발되었습니다.
+
+**안드로이드 깃허브 주소**
+[Android Github](https://github.com/AI-COURT-FE/AI-COURT-FE)
+
+
 
 ## 기술 스택
 
